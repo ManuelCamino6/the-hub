@@ -55,3 +55,14 @@ export type Project = {
   role: ProjectRole;
   created_at: string;
 };
+
+export const projectIdSchema = z.uuid();
+
+export const updateProjectSchema =
+  createProjectSchema.pick({
+    name: true,
+  }).strict();
+
+export type UpdateProjectInput = z.infer<
+  typeof updateProjectSchema
+>;

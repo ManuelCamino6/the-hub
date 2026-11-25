@@ -130,5 +130,37 @@
             "EDITOR": "Editor",
             "VIEWER": "Lector"
         }
+    },
+    "Workspace": {
+        "projects": "Mis proyectos",
+        "overview": "Resumen",
+        "connectors": "Conectores",
+        "integrations": "Integraciones",
+        "catalog": "Explorar conectores",
+        "sync": "Sincronización",
+        "news": "Novedades",
+        "billing": "Facturación",
+        "settings": "Configuración",
+        "general": "General",
+        "members": "Integrantes",
+        "projectId": "ID del proyecto",
+        "copyId": "Copiar ID",
+        "copied": "Copiado",
+        "project": "Proyecto",
+        "open": "Abrir proyecto",
+        "settingsDescription": "Administrá la configuración general del proyecto.",
+        "saved": "Cambios guardados.",
+        "saveError": "No pudimos guardar los cambios.",
+        "deleteError": "No pudimos eliminar el proyecto.",
+        "saving": "Guardando...",
+        "deleting": "Eliminando...",
+        "dangerZone": "Zona de peligro",
+        "deleteProject": "Eliminar proyecto",
+        "deleteDescription": "Esta acción es irreversible. Se bloqueará el acceso operativo al proyecto.",
+        "deleteBusinessDescription": "La eliminación detendrá las operaciones. Las obligaciones de pago anteriores seguirán vigentes.",
+        "deleteConfirmation": "Escribí el nombre del proyecto para confirmar.",
+        "welcome": "Estás en {name}.",
+        "businessDescription": "Administrá las integraciones de tu empresa.",
+        "developmentDescription": "Administrá tus conectores reutilizables."
     }
 }

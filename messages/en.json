@@ -130,5 +130,37 @@
             "EDITOR": "Editor",
             "VIEWER": "Viewer"
         }
+    },
+    "Workspace": {
+        "projects": "My projects",
+        "overview": "Overview",
+        "connectors": "Connectors",
+        "integrations": "Integrations",
+        "catalog": "Explore connectors",
+        "sync": "Synchronization",
+        "news": "News",
+        "billing": "Billing",
+        "settings": "Settings",
+        "general": "General",
+        "members": "Members",
+        "projectId": "Project ID",
+        "copyId": "Copy ID",
+        "copied": "Copied",
+        "project": "Project",
+        "open": "Open project",
+        "settingsDescription": "Manage your general project settings.",
+        "saved": "Changes saved.",
+        "saveError": "We could not save your changes.",
+        "deleteError": "We could not delete the project.",
+        "saving": "Saving...",
+        "deleting": "Deleting...",
+        "dangerZone": "Danger zone",
+        "deleteProject": "Delete project",
+        "deleteDescription": "This action is irreversible. Operational access to the project will be blocked.",
+        "deleteBusinessDescription": "Deletion will stop operations. Previous payment obligations will remain valid.",
+        "deleteConfirmation": "Enter the project name to confirm.",
+        "welcome": "You are in {name}.",
+        "businessDescription": "Manage your business integrations.",
+        "developmentDescription": "Manage your reusable connectors."
     }
 }

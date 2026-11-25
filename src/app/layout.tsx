@@ -1,9 +1,14 @@
+
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { NextIntlClientProvider } from "next-intl";
-import { getLocale } from "next-intl/server";
 import { Geist, Geist_Mono } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import {
+  getLocale,
+  getMessages,
+  getTranslations,
+} from "next-intl/server";
 import "./globals.css";
+import { Suspense } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,14 +20,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "The Hub",
-    template: "%s | The Hub",
-  },
-  description:
-    "Plataforma de sincronización de datos entre sistemas mediante conectores reutilizables.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Landing");
+
+  return {
+    title: {
+      default: "The Hub",
+      template: "%s | The Hub",
+    },
+    description: t("metadata.description"),
+  };
+}
+
 
 export default function RootLayout({
   children,
@@ -31,7 +40,9 @@ export default function RootLayout({
 }>) {
   return (
     <Suspense>
-      <LocalizedLayout>{children}</LocalizedLayout>
+      <LocalizedLayout>
+        {children}
+      </LocalizedLayout>
     </Suspense>
   );
 }
@@ -42,16 +53,21 @@ async function LocalizedLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getLocale();
+  const messages = await getMessages();
 
   return (
     <html lang={locale}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NextIntlClientProvider>
+        <NextIntlClientProvider
+          locale={locale}
+          messages={messages}
+        >
           {children}
         </NextIntlClientProvider>
       </body>
     </html>
   );
 }
+
