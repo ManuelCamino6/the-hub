@@ -3,6 +3,9 @@ import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { requireProject } from "@/lib/projects/context";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { CardFooter } from "@/components/ui/card";
 
 import {
   Card,
@@ -50,6 +53,15 @@ async function ProjectContent({ params }: Props) {
               : t("developmentDescription")}
           </CardDescription>
         </CardHeader>
+        {project.type === "BUSINESS" && (
+          <CardFooter>
+            <Button asChild>
+              <Link href={`/p/${id}/catalog`}>
+                {t("catalog")}
+              </Link>
+            </Button>
+          </CardFooter>
+        )}
       </Card>
     </>
   );

@@ -8,6 +8,8 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { requireProject } from "@/lib/projects/context";
 import { getConnector } from "./service";
+import { requireBusinessProject } from "@/lib/projects/business-context";
+import { getCatalogConnector } from "./service";
 
 export const requireDevelopmentProject = cache(
     async (projectId: string, write = false) => {
@@ -60,5 +62,42 @@ export const requireOwnedConnector = cache(
             connector,
             canWrite: project.role !== "VIEWER",
         };
+    }
+);
+
+
+export const requireCatalogConnector = cache(
+    async (projectId: string, connectorId: string) => {
+        const project = await requireBusinessProject(
+            projectId
+        );
+
+        if (!z.uuid().safeParse(connectorId).success) {
+            notFound();
+        }
+
+        try {
+            const connector = await getCatalogConnector(
+                projectId,
+                connectorId
+            );
+
+            return {
+                project,
+                connector,
+                canWrite: project.role !== "VIEWER",
+            };
+        } catch (error) {
+            if (
+                typeof error === "object" &&
+                error !== null &&
+                "code" in error &&
+                error.code === "P0002"
+            ) {
+                notFound();
+            }
+
+            throw error;
+        }
     }
 );

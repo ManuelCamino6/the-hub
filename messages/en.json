@@ -283,5 +283,38 @@
         "invalidProjectId": "Enter a valid UUID that has not already been added.",
         "credentialsDescription": "Manage the credential used by the external system to authenticate.",
         "terminalStatus": "The connector is deprecated and its status cannot be changed."
+    },
+    "Catalog": {
+        "title": "Explore connectors",
+        "description": "Find available connectors to integrate your systems.",
+        "searchPlaceholder": "Search connectors...",
+        "empty": "No connectors available",
+        "emptyDescription": "Published connectors authorized for this project will appear here.",
+        "noResults": "No connectors found",
+        "noResultsDescription": "Try a different search term.",
+        "clearSearch": "Clear search",
+        "open": "View details",
+        "install": "Install connector",
+        "installationPending": "Installation will be available in the next increment.",
+        "parameters": "Configuration parameters",
+        "permissions": "Requested permissions",
+        "required": "Required",
+        "optional": "Optional",
+        "encrypted": "Encrypted",
+        "noParameters": "This connector does not require configuration parameters.",
+        "noPermissions": "This connector does not request model permissions.",
+        "permissionDescription": "You can choose which permissions to grant when configuring the integration.",
+        "nextPage": "Next page",
+        "firstPage": "First page",
+        "loadError": "We could not load the connectors.",
+        "operations": {
+            "can_list": "Read records",
+            "can_send_post": "Send creations",
+            "can_receive_post": "Receive creations",
+            "can_send_update": "Send updates",
+            "can_receive_update": "Receive updates",
+            "can_send_delete": "Send deletions",
+            "can_receive_delete": "Receive deletions"
+        }
     }
 }

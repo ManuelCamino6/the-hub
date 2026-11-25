@@ -283,5 +283,38 @@
         "invalidProjectId": "Ingresá un UUID válido que no esté repetido.",
         "credentialsDescription": "Administrá la credencial utilizada por el sistema externo para autenticarse.",
         "terminalStatus": "El conector está obsoleto y no puede cambiar de estado."
+    },
+    "Catalog": {
+        "title": "Explorar conectores",
+        "description": "Encontrá conectores disponibles para integrar tus sistemas.",
+        "searchPlaceholder": "Buscar conectores...",
+        "empty": "No hay conectores disponibles",
+        "emptyDescription": "Los conectores publicados y autorizados para este proyecto aparecerán aquí.",
+        "noResults": "No encontramos conectores",
+        "noResultsDescription": "Probá con otro término de búsqueda.",
+        "clearSearch": "Limpiar búsqueda",
+        "open": "Ver detalle",
+        "install": "Instalar conector",
+        "installationPending": "La instalación estará disponible en el próximo incremento.",
+        "parameters": "Parámetros de configuración",
+        "permissions": "Permisos solicitados",
+        "required": "Obligatorio",
+        "optional": "Opcional",
+        "encrypted": "Cifrado",
+        "noParameters": "Este conector no requiere parámetros de configuración.",
+        "noPermissions": "Este conector no solicita permisos sobre modelos.",
+        "permissionDescription": "Podrás decidir qué permisos conceder al configurar la integración.",
+        "nextPage": "Siguiente página",
+        "firstPage": "Primera página",
+        "loadError": "No pudimos cargar los conectores.",
+        "operations": {
+            "can_list": "Consultar registros",
+            "can_send_post": "Enviar creaciones",
+            "can_receive_post": "Recibir creaciones",
+            "can_send_update": "Enviar modificaciones",
+            "can_receive_update": "Recibir modificaciones",
+            "can_send_delete": "Enviar eliminaciones",
+            "can_receive_delete": "Recibir eliminaciones"
+        }
     }
 }

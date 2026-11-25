@@ -14,6 +14,7 @@ import {
     FolderOpen,
     Plus,
     Users,
+    Compass,
 } from "lucide-react";
 
 import {
@@ -124,6 +125,19 @@ export function ProjectSidebar({
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
+                        {project.type === "BUSINESS" && (
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={pathname.startsWith(`${base}/catalog`)}
+                                >
+                                    <Link href={`${base}/catalog`}>
+                                        <Compass />
+                                        <span>{t("catalog")}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        )}
                     </SidebarMenu>
                 </SidebarGroup>
 
