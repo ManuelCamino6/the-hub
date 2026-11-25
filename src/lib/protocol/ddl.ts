@@ -25,6 +25,10 @@ const sqlTypes: Record<ColumnType, string> = {
   UUID: "uuid",
 };
 
+export function columnTypeSql(type: ColumnType) {
+  return sqlTypes[type];
+}
+
 export function identifier(value: string) {
   if (
     !/^[a-z][a-z0-9_]{0,62}$/.test(value)
@@ -84,7 +88,7 @@ export function columnSql(
   validateColumnDefinition(column);
 
   const name = identifier(column.name);
-  const type = sqlTypes[column.type];
+  const type = columnTypeSql(column.type);
 
   let definition = `${name} ${type}`;
 
@@ -212,5 +216,168 @@ export async function addModelForeignKey(
       project_id,
       id
     )
+  `);
+}
+
+
+export async function dropColumnConstraints(
+  tx: TransactionSql,
+  tableName: string,
+  columnName: string
+) {
+  const constraints = await tx<{
+    name: string;
+  }[]>`
+    select c.conname as name
+
+    from pg_constraint c
+
+    join pg_class t
+      on t.oid = c.conrelid
+
+    join pg_namespace n
+      on n.oid = t.relnamespace
+
+    join pg_attribute a
+      on a.attrelid = t.oid
+      and a.attnum = any(c.conkey)
+
+    where n.nspname = 'data'
+      and t.relname = ${tableName}
+      and a.attname = ${columnName}
+      and c.contype in ('c', 'f')
+  `;
+
+  for (const constraint of constraints) {
+    await tx.unsafe(`
+      alter table ${dataTable(tableName)}
+      drop constraint ${identifier(constraint.name)}
+    `);
+  }
+}
+
+
+export async function alterModelColumn(
+  tx: TransactionSql,
+  tableName: string,
+  previous: ColumnDefinition,
+  next: ColumnDefinition
+) {
+  validateColumnDefinition(next);
+
+  const table = dataTable(tableName);
+  const column = identifier(next.name);
+  const type = columnTypeSql(next.type);
+
+  await dropColumnConstraints(
+    tx,
+    tableName,
+    previous.name
+  );
+
+  await tx.unsafe(`
+    alter table ${table}
+    alter column ${column}
+    drop default
+  `);
+
+  if (previous.type !== next.type) {
+    await tx.unsafe(`
+      alter table ${table}
+      alter column ${column}
+      type ${type}
+      using ${column}::${type}
+    `);
+  }
+
+  if (next.default_value !== null) {
+    const value = parseMetadataValue(
+      next.type,
+      next.default_value
+    );
+
+    await tx.unsafe(`
+      alter table ${table}
+      alter column ${column}
+      set default ${sqlLiteral(value)}::${type}
+    `);
+  }
+
+  await tx.unsafe(`
+    alter table ${table}
+    alter column ${column}
+    ${next.nullable ? "drop" : "set"} not null
+  `);
+
+  if (next.possible_values) {
+    const values = next.possible_values.map(
+      (value) => {
+        const parsed = parseMetadataValue(
+          next.type,
+          value
+        );
+
+        return `${sqlLiteral(parsed)}::${type}`;
+      }
+    );
+
+    await tx.unsafe(`
+      alter table ${table}
+      add check (
+        ${column} in (${values.join(", ")})
+      )
+    `);
+  }
+}
+
+
+export async function addModelColumn(
+  tx: TransactionSql,
+  tableName: string,
+  column: ColumnDefinition
+) {
+  await tx.unsafe(`
+    alter table ${dataTable(tableName)}
+    add column ${columnSql(column)}
+  `);
+}
+
+export async function dropModelColumn(
+  tx: TransactionSql,
+  tableName: string,
+  columnName: string
+) {
+  await tx.unsafe(`
+    alter table ${dataTable(tableName)}
+    drop column ${identifier(columnName)}
+  `);
+}
+
+export async function renameMaterializedTable(
+  tx: TransactionSql,
+  previousName: string,
+  nextName: string
+) {
+  await tx.unsafe(`
+    alter table ${dataTable(previousName)}
+    rename to ${identifier(nextName)}
+  `);
+
+  await tx.unsafe(`
+    alter table ${dataTable(`${previousName}_ref`)}
+    rename to ${identifier(`${nextName}_ref`)}
+  `);
+}
+
+export async function dropMaterializedTable(
+  tx: TransactionSql,
+  tableName: string
+) {
+  await tx.unsafe(`
+    drop table ${dataTable(`${tableName}_ref`)}
+  `);
+
+  await tx.unsafe(`
+    drop table ${dataTable(tableName)}
   `);
 }

@@ -9,7 +9,11 @@ import {
     Plus,
     Search,
 } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
+import {
+    isSuperadmin,
+} from "@/lib/protocol/admin-context";
 import { createClient } from "@/lib/supabase/server";
 import { listProjects } from "@/lib/projects/service";
 import { listProjectsSchema } from "@/lib/projects/schemas";
@@ -59,7 +63,8 @@ async function ProjectsContent({
         await supabase.auth.getUser();
 
     if (!user) redirect("/login");
-
+    const canAdminister = await isSuperadmin(user.id);
+    const adminT = await getTranslations("Admin");
     const t = await getTranslations("Projects");
     const auth = await getTranslations("Auth");
 
@@ -114,7 +119,14 @@ async function ProjectsContent({
 
                 <div className="flex items-center gap-2">
                     <LanguageSwitcher />
-
+                    {canAdminister && (
+                        <Button variant="outline" asChild>
+                            <Link href="/admin">
+                                <ShieldCheck />
+                                {adminT("title")}
+                            </Link>
+                        </Button>
+                    )}
                     <form action={logout}>
                         <Button variant="outline" type="submit">
                             {auth("logout")}
