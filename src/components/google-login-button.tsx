@@ -1,8 +1,13 @@
 
+"use client";
+
+import { useTranslations } from "next-intl";
 import { loginWithGoogle } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
 
 export function GoogleLoginButton() {
+  const t = useTranslations("Auth");
+
   return (
     <Button
       type="submit"
@@ -11,7 +16,7 @@ export function GoogleLoginButton() {
       formNoValidate
       className="w-full"
     >
-      Continue with Google
+      {t("google")}
     </Button>
   );
 }

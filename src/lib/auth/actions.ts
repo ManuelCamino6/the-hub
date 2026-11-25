@@ -3,6 +3,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getTranslations } from "next-intl/server";
 
 export type AuthState = {
     error?: string;
@@ -13,6 +14,8 @@ export async function login(
     _state: AuthState,
     formData: FormData
 ): Promise<AuthState> {
+    const t = await getTranslations("Auth");
+    const common = await getTranslations("Common");
     const supabase = await createClient();
 
     const { error } = await supabase.auth.signInWithPassword({
@@ -21,7 +24,12 @@ export async function login(
     });
 
     if (error) {
-        return { error: error.message };
+        return {
+            error:
+                error.code === "invalid_credentials"
+                    ? t("invalidCredentials")
+                    : common("unexpectedError"),
+        };
     }
 
     redirect("/dashboard");
@@ -31,12 +39,14 @@ export async function signup(
     _state: AuthState,
     formData: FormData
 ): Promise<AuthState> {
+    const t = await getTranslations("Auth");
+    const common = await getTranslations("Common");
     const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "");
     const name = String(formData.get("name") ?? "").trim();
 
     if (!name || !email || !password) {
-        return { error: "All fields are required." };
+        return { error: t("requiredFields") };
     }
 
     const supabase = await createClient();
@@ -51,12 +61,10 @@ export async function signup(
     });
 
     if (error) {
-        return { error: error.message };
+        return { error: common("unexpectedError") };
     }
 
-    return {
-        success: "Check your email to confirm your account.",
-    };
+    return { success: t("verifyEmail") };
 }
 
 export async function logout() {

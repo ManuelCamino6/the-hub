@@ -1,5 +1,7 @@
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -10,47 +12,22 @@ import {
 } from "@/components/ui/accordion";
 
 const benefits = [
-  {
-    title: "Un modelo de datos común",
-    description:
-      "Conectá diferentes sistemas mediante un protocolo compartido.",
-  },
-  {
-    title: "Permisos bajo tu control",
-    description:
-      "Definí qué información puede consultar y modificar cada integración.",
-  },
-  {
-    title: "Visibilidad de la sincronización",
-    description:
-      "Consultá el estado y la actividad de tus integraciones.",
-  },
-];
+  "dataModel",
+  "permissions",
+  "visibility",
+] as const;
 
 const questions = [
-  {
-    question: "¿Qué es The Hub?",
-    answer:
-      "Una plataforma de sincronización de datos entre sistemas mediante conectores.",
-  },
-  {
-    question: "¿Qué es un proyecto Business?",
-    answer:
-      "Es el espacio donde una organización instala conectores, configura integraciones y administra sus permisos.",
-  },
-  {
-    question: "¿Qué es un proyecto Development?",
-    answer:
-      "Es el espacio donde los desarrolladores crean, configuran y distribuyen conectores.",
-  },
-  {
-    question: "¿Necesito conocimientos técnicos?",
-    answer:
-      "Instalar y configurar un conector existente no requiere desarrollar una integración desde cero. Crear nuevos conectores requiere conocimientos de programación.",
-  },
-];
+  "platform",
+  "business",
+  "development",
+  "technical",
+] as const;
 
-export default function HomePage() {
+export default async function HomePage() {
+  const t = await getTranslations("Landing");
+  const auth = await getTranslations("Auth");
+
   return (
     <div className="min-h-svh">
       <header className="border-b">
@@ -59,12 +36,15 @@ export default function HomePage() {
             The Hub
           </Link>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <LanguageSwitcher />
+
             <Button variant="ghost" asChild>
-              <Link href="/login">Ingresar</Link>
+              <Link href="/login">{auth("login")}</Link>
             </Button>
+
             <Button asChild>
-              <Link href="/signup">Crear cuenta</Link>
+              <Link href="/signup">{auth("signup")}</Link>
             </Button>
           </div>
         </nav>
@@ -73,18 +53,15 @@ export default function HomePage() {
       <main className="mx-auto max-w-5xl space-y-16 px-6 py-16">
         <section className="max-w-2xl space-y-6">
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            Conectá tus sistemas.
-            Simplificá tus integraciones.
+            {t("hero.title")}
           </h1>
 
           <p className="text-lg text-muted-foreground">
-            The Hub es una plataforma de sincronización
-            que conecta sistemas mediante un modelo de
-            datos común y conectores reutilizables.
+            {t("hero.description")}
           </p>
 
           <Button size="lg" asChild>
-            <Link href="/signup">Comenzar</Link>
+            <Link href="/signup">{t("hero.cta")}</Link>
           </Button>
         </section>
 
@@ -92,7 +69,7 @@ export default function HomePage() {
 
         <section className="space-y-6">
           <h2 className="text-2xl font-semibold">
-            Cómo funciona
+            {t("howItWorks.title")}
           </h2>
 
           <div className="grid gap-8 md:grid-cols-2">
@@ -101,9 +78,7 @@ export default function HomePage() {
                 Business
               </h3>
               <p className="text-muted-foreground">
-                Instalá conectores, configurá tus
-                integraciones y administrá el intercambio
-                de datos entre tus sistemas.
+                {t("howItWorks.business")}
               </p>
             </div>
 
@@ -112,9 +87,7 @@ export default function HomePage() {
                 Development
               </h3>
               <p className="text-muted-foreground">
-                Desarrollá conectores reutilizables y
-                distribuilos a organizaciones que
-                necesiten integrar sus sistemas.
+                {t("howItWorks.development")}
               </p>
             </div>
           </div>
@@ -124,17 +97,17 @@ export default function HomePage() {
 
         <section className="space-y-6">
           <h2 className="text-2xl font-semibold">
-            Integraciones más simples
+            {t("benefits.title")}
           </h2>
 
           <div className="grid gap-8 md:grid-cols-3">
             {benefits.map((benefit) => (
-              <div key={benefit.title} className="space-y-2">
+              <div key={benefit} className="space-y-2">
                 <h3 className="font-medium">
-                  {benefit.title}
+                  {t(`benefits.${benefit}.title`)}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {benefit.description}
+                  {t(`benefits.${benefit}.description`)}
                 </p>
               </div>
             ))}
@@ -145,13 +118,11 @@ export default function HomePage() {
 
         <section className="max-w-2xl space-y-3">
           <h2 className="text-2xl font-semibold">
-            Seguridad y control
+            {t("security.title")}
           </h2>
+
           <p className="text-muted-foreground">
-            El modelo de seguridad de The Hub se basa
-            en roles por proyecto, permisos explícitos
-            por integración y credenciales independientes
-            para cada conector.
+            {t("security.description")}
           </p>
         </section>
 
@@ -159,20 +130,17 @@ export default function HomePage() {
 
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">
-            Preguntas frecuentes
+            {t("faq.title")}
           </h2>
 
           <Accordion type="single" collapsible>
-            {questions.map(({ question, answer }, index) => (
-              <AccordionItem
-                key={question}
-                value={String(index)}
-              >
+            {questions.map((question) => (
+              <AccordionItem key={question} value={question}>
                 <AccordionTrigger>
-                  {question}
+                  {t(`faq.${question}.question`)}
                 </AccordionTrigger>
                 <AccordionContent>
-                  {answer}
+                  {t(`faq.${question}.answer`)}
                 </AccordionContent>
               </AccordionItem>
             ))}
@@ -181,10 +149,11 @@ export default function HomePage() {
 
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">
-            Empezá con The Hub
+            {t("cta")}
           </h2>
+
           <Button asChild>
-            <Link href="/signup">Crear cuenta</Link>
+            <Link href="/signup">{auth("signup")}</Link>
           </Button>
         </section>
       </main>

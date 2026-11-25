@@ -15,7 +15,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-
+import { useTranslations } from "next-intl";
 // CUSTOM IMPORTS
 import { useActionState } from "react";
 import { signup } from "@/lib/auth/actions";

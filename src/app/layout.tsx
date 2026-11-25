@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -21,13 +24,34 @@ export const metadata: Metadata = {
     "Plataforma de sincronización de datos entre sistemas mediante conectores reutilizables.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html 
-      lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <Suspense>
+      <LocalizedLayout>{children}</LocalizedLayout>
+    </Suspense>
+  );
+}
+
+async function LocalizedLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const locale = await getLocale();
+
+  return (
+    <html lang={locale}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <NextIntlClientProvider>
+          {children}
+        </NextIntlClientProvider>
+      </body>
     </html>
   );
 }

@@ -1,0 +1,134 @@
+{
+    "Common": {
+        "appName": "The Hub",
+        "language": "Idioma",
+        "loading": "Cargando...",
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "create": "Crear",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "back": "Volver",
+        "continue": "Continuar",
+        "search": "Buscar",
+        "confirm": "Confirmar",
+        "retry": "Reintentar",
+        "unexpectedError": "Ocurrió un error inesperado."
+    },
+    "Auth": {
+        "login": "Ingresar",
+        "signup": "Crear cuenta",
+        "logout": "Cerrar sesión",
+        "loginTitle": "Ingresá a The Hub",
+        "signupTitle": "Creá tu cuenta",
+        "loginDescription": "Ingresá tus credenciales para continuar.",
+        "signupDescription": "Completá tus datos para comenzar.",
+        "name": "Nombre",
+        "email": "Correo electrónico",
+        "password": "Contraseña",
+        "confirmPassword": "Confirmar contraseña",
+        "forgotPassword": "¿Olvidaste tu contraseña?",
+        "google": "Continuar con Google",
+        "orContinueWith": "O continuá con",
+        "noAccount": "¿No tenés una cuenta?",
+        "hasAccount": "¿Ya tenés una cuenta?",
+        "signingIn": "Ingresando...",
+        "creatingAccount": "Creando cuenta...",
+        "verifyEmail": "Revisá tu correo para confirmar tu cuenta.",
+        "invalidCredentials": "El correo o la contraseña son incorrectos.",
+        "requiredFields": "Completá todos los campos.",
+        "authenticationFailed": "No pudimos completar la autenticación.",
+        "tryAgain": "Volvé a intentarlo.",
+        "backToLogin": "Volver al inicio de sesión"
+    },
+    "Dashboard": {
+        "welcome": "Hola, {name}"
+    },
+    "Landing": {
+        "hero": {
+            "title": "Conectá tus sistemas. Simplificá tus integraciones.",
+            "description": "The Hub es una plataforma de sincronización que conecta sistemas mediante un modelo de datos común y conectores reutilizables.",
+            "cta": "Comenzar"
+        },
+        "howItWorks": {
+            "title": "Cómo funciona",
+            "business": "Instalá conectores, configurá tus integraciones y administrá el intercambio de datos entre tus sistemas.",
+            "development": "Desarrollá conectores reutilizables y distribuilos a organizaciones que necesiten integrar sus sistemas."
+        },
+        "benefits": {
+            "title": "Integraciones más simples",
+            "dataModel": {
+                "title": "Un modelo de datos común",
+                "description": "Conectá diferentes sistemas mediante un protocolo compartido."
+            },
+            "permissions": {
+                "title": "Permisos bajo tu control",
+                "description": "Definí qué información puede consultar y modificar cada integración."
+            },
+            "visibility": {
+                "title": "Visibilidad de la sincronización",
+                "description": "Consultá el estado y la actividad de tus integraciones."
+            }
+        },
+        "security": {
+            "title": "Seguridad y control",
+            "description": "El modelo de seguridad de The Hub se basa en roles por proyecto, permisos explícitos por integración y credenciales independientes para cada conector."
+        },
+        "faq": {
+            "title": "Preguntas frecuentes",
+            "platform": {
+                "question": "¿Qué es The Hub?",
+                "answer": "Una plataforma de sincronización de datos entre sistemas mediante conectores."
+            },
+            "business": {
+                "question": "¿Qué es un proyecto Business?",
+                "answer": "Es el espacio donde una organización instala conectores, configura integraciones y administra sus permisos."
+            },
+            "development": {
+                "question": "¿Qué es un proyecto Development?",
+                "answer": "Es el espacio donde los desarrolladores crean, configuran y distribuyen conectores."
+            },
+            "technical": {
+                "question": "¿Necesito conocimientos técnicos?",
+                "answer": "Instalar y configurar un conector existente no requiere desarrollar una integración desde cero. Crear nuevos conectores requiere conocimientos de programación."
+            }
+        },
+        "cta": "Empezá con The Hub",
+        "metadata": {
+            "description": "Plataforma de sincronización de datos entre sistemas mediante conectores reutilizables."
+        }
+    },
+    "Projects": {
+        "title": "Mis proyectos",
+        "description": "Administrá tus proyectos e integraciones.",
+        "create": "Crear proyecto",
+        "createDescription": "Elegí el tipo de proyecto que necesitás.",
+        "name": "Nombre del proyecto",
+        "namePlaceholder": "Mi proyecto",
+        "type": "Tipo de proyecto",
+        "typeImmutable": "El tipo no podrá modificarse después de crear el proyecto.",
+        "creating": "Creando proyecto...",
+        "search": "Buscar proyectos...",
+        "empty": "No encontramos proyectos.",
+        "emptyDescription": "Creá tu primer proyecto para comenzar.",
+        "nextPage": "Siguiente página",
+        "firstPage": "Primera página",
+        "validationError": "Ingresá un nombre válido y seleccioná un tipo de proyecto.",
+        "sessionExpired": "Tu sesión venció. Volvé a ingresar.",
+        "createError": "No pudimos crear el proyecto.",
+        "listError": "No pudimos cargar tus proyectos.",
+        "types": {
+            "BUSINESS": "Business",
+            "DEVELOPMENT": "Development"
+        },
+        "typeDescriptions": {
+            "BUSINESS": "Instalá conectores y administrá integraciones entre tus sistemas.",
+            "DEVELOPMENT": "Creá y distribuí conectores reutilizables."
+        },
+        "roles": {
+            "ADMIN": "Administrador",
+            "EDITOR": "Editor",
+            "VIEWER": "Lector"
+        }
+    }
+}

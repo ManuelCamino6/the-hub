@@ -1,0 +1,134 @@
+{
+    "Common": {
+        "appName": "The Hub",
+        "language": "Language",
+        "loading": "Loading...",
+        "save": "Save",
+        "cancel": "Cancel",
+        "create": "Create",
+        "edit": "Edit",
+        "delete": "Delete",
+        "back": "Back",
+        "continue": "Continue",
+        "search": "Search",
+        "confirm": "Confirm",
+        "retry": "Retry",
+        "unexpectedError": "An unexpected error occurred."
+    },
+    "Auth": {
+        "login": "Sign in",
+        "signup": "Create account",
+        "logout": "Sign out",
+        "loginTitle": "Sign in to The Hub",
+        "signupTitle": "Create your account",
+        "loginDescription": "Enter your credentials to continue.",
+        "signupDescription": "Enter your details to get started.",
+        "name": "Name",
+        "email": "Email",
+        "password": "Password",
+        "confirmPassword": "Confirm password",
+        "forgotPassword": "Forgot your password?",
+        "google": "Continue with Google",
+        "orContinueWith": "Or continue with",
+        "noAccount": "Don't have an account?",
+        "hasAccount": "Already have an account?",
+        "signingIn": "Signing in...",
+        "creatingAccount": "Creating account...",
+        "verifyEmail": "Check your email to confirm your account.",
+        "invalidCredentials": "Your email or password is incorrect.",
+        "requiredFields": "Complete all fields.",
+        "authenticationFailed": "We could not complete your authentication.",
+        "tryAgain": "Please try again.",
+        "backToLogin": "Back to sign in"
+    },
+    "Dashboard": {
+        "welcome": "Hello, {name}"
+    },
+    "Landing": {
+        "hero": {
+            "title": "Connect your systems. Simplify your integrations.",
+            "description": "The Hub is a synchronization platform that connects systems through a shared data model and reusable connectors.",
+            "cta": "Get started"
+        },
+        "howItWorks": {
+            "title": "How it works",
+            "business": "Install connectors, configure integrations and manage data exchange between your systems.",
+            "development": "Build reusable connectors and distribute them to organizations that need to integrate their systems."
+        },
+        "benefits": {
+            "title": "Simpler integrations",
+            "dataModel": {
+                "title": "A shared data model",
+                "description": "Connect different systems through a common protocol."
+            },
+            "permissions": {
+                "title": "Permissions under your control",
+                "description": "Define which information each integration can read and modify."
+            },
+            "visibility": {
+                "title": "Synchronization visibility",
+                "description": "Monitor the status and activity of your integrations."
+            }
+        },
+        "security": {
+            "title": "Security and control",
+            "description": "The Hub's security model is based on project roles, explicit integration permissions and independent credentials for each connector."
+        },
+        "faq": {
+            "title": "Frequently asked questions",
+            "platform": {
+                "question": "What is The Hub?",
+                "answer": "A platform for synchronizing data between systems through connectors."
+            },
+            "business": {
+                "question": "What is a Business project?",
+                "answer": "A workspace where organizations install connectors, configure integrations and manage permissions."
+            },
+            "development": {
+                "question": "What is a Development project?",
+                "answer": "A workspace where developers build, configure and distribute connectors."
+            },
+            "technical": {
+                "question": "Do I need technical knowledge?",
+                "answer": "Installing and configuring an existing connector does not require building an integration from scratch. Creating new connectors requires programming knowledge."
+            }
+        },
+        "cta": "Get started with The Hub",
+        "metadata": {
+            "description": "A data synchronization platform powered by reusable connectors."
+        }
+    },
+    "Projects": {
+        "title": "My projects",
+        "description": "Manage your projects and integrations.",
+        "create": "Create project",
+        "createDescription": "Choose the type of project you need.",
+        "name": "Project name",
+        "namePlaceholder": "My project",
+        "type": "Project type",
+        "typeImmutable": "The project type cannot be changed after creation.",
+        "creating": "Creating project...",
+        "search": "Search projects...",
+        "empty": "No projects found.",
+        "emptyDescription": "Create your first project to get started.",
+        "nextPage": "Next page",
+        "firstPage": "First page",
+        "validationError": "Enter a valid name and select a project type.",
+        "sessionExpired": "Your session has expired. Please sign in again.",
+        "createError": "We could not create the project.",
+        "listError": "We could not load your projects.",
+        "types": {
+            "BUSINESS": "Business",
+            "DEVELOPMENT": "Development"
+        },
+        "typeDescriptions": {
+            "BUSINESS": "Install connectors and manage integrations between your systems.",
+            "DEVELOPMENT": "Build and distribute reusable connectors."
+        },
+        "roles": {
+            "ADMIN": "Administrator",
+            "EDITOR": "Editor",
+            "VIEWER": "Viewer"
+        }
+    }
+}

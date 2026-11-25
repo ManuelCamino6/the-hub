@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from "cn"
-
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -29,6 +29,7 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const [state, action, pending] = useActionState(login, {});
+  const t = useTranslations("Auth");
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -70,7 +71,7 @@ export function LoginForm({
               )}
               <Field>
                 <Button type="submit" disabled={pending}>
-                  {pending ? "Signing in..." : "Login"}
+                  {pending ? t("signingIn") : t("login")}
                 </Button>
                 <GoogleLoginButton />
                 <FieldDescription className="text-center">
