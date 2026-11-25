@@ -267,3 +267,91 @@ export async function rollbackBatch(
 }
 
 
+
+export async function lockOperationalBatch(
+  tx: TransactionSql,
+  tokenHash: string,
+  batchId: string
+) {
+  const [reference] = await tx<{
+    instance_id: string;
+  }[]>`
+    select b.instance_id
+
+    from protocol.batches b
+
+    join platform.instances i
+      on i.id = b.instance_id
+
+    join platform.connectors c
+      on c.id = i.connector_id
+
+    where b.id = ${batchId}
+      and c.token_hash = ${tokenHash}
+      and c.deleted_at is null
+  `;
+
+  if (!reference) {
+    await authenticateConnector(
+      tx,
+      tokenHash
+    );
+
+    throw new DomainError(
+      "BATCH_NOT_FOUND",
+      404
+    );
+  }
+
+  const context =
+    await lockOperationInstance(
+      tx,
+      tokenHash,
+      reference.instance_id
+    );
+
+  const batch = await lockOwnedBatch(
+    tx,
+    tokenHash,
+    batchId
+  );
+
+  if (batch.type !== "TRANSACTION") {
+    throw new DomainError(
+      "INVALID_BATCH_TYPE",
+      409
+    );
+  }
+
+  if (
+    batch.project_id !==
+      context.instance.project_id ||
+    batch.instance_id !==
+      context.instance.id
+  ) {
+    throw new DomainError(
+      "INVALID_BATCH_CONTEXT",
+      409
+    );
+  }
+
+  const current =
+    await expireBatchIfNeeded(
+      tx,
+      batch
+    );
+
+  if (current.status === "OPEN") {
+    await requireOperationalInstance(
+      tx,
+      context.instance,
+      context.connector.status
+    );
+  }
+
+  return {
+    ...context,
+    batch: current,
+  };
+}
+

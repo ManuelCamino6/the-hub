@@ -87,3 +87,33 @@ export async function resolveRecord(
 
   return record;
 }
+
+
+export async function referenceExists(
+  tx: TransactionSql,
+  model: ModelMetadata,
+  instanceId: string,
+  refId: string
+): Promise<boolean> {
+  const refs = modelReferenceTable(model);
+
+  const [result] = await tx.unsafe<
+    { exists: boolean }[]
+  >(
+    `
+      select exists (
+        select 1
+        from ${refs}
+
+        where instance_id = $1::uuid
+          and ref_id = $2::text
+      ) as exists
+    `,
+    [
+      instanceId,
+      refId,
+    ]
+  );
+
+  return result.exists;
+}
