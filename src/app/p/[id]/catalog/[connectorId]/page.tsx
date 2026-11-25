@@ -96,15 +96,13 @@ async function CatalogDetailContent({
                     </Badge>
 
                     {canWrite && (
-                        <div className="space-y-2">
-                            <Button disabled>
+                        <Button asChild>
+                            <Link
+                                href={`/p/${id}/catalog/${connectorId}/install`}
+                            >
                                 {t("install")}
-                            </Button>
-
-                            <p className="text-sm text-muted-foreground">
-                                {t("installationPending")}
-                            </p>
-                        </div>
+                            </Link>
+                        </Button>
                     )}
                 </CardContent>
             </Card>

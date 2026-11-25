@@ -316,5 +316,48 @@
             "can_send_delete": "Enviar eliminaciones",
             "can_receive_delete": "Recibir eliminaciones"
         }
+    },
+    "Instances": {
+        "title": "Integraciones",
+        "description": "Administrá las conexiones entre tus sistemas.",
+        "create": "Nueva integración",
+        "install": "Instalar conector",
+        "name": "Nombre de la integración",
+        "namePlaceholder": "Mi integración",
+        "connector": "Conector",
+        "parameters": "Parámetros",
+        "permissions": "Permisos",
+        "origins": "Orígenes",
+        "required": "Obligatorio",
+        "optional": "Opcional",
+        "encrypted": "Valor cifrado",
+        "empty": "Todavía no hay integraciones",
+        "emptyDescription": "Explorá el catálogo para conectar tu primer sistema.",
+        "explore": "Explorar conectores",
+        "configurationStatus": "Configuración",
+        "operationStatus": "Operación",
+        "installing": "Instalando...",
+        "installed": "Integración creada correctamente.",
+        "invalid": "Revisá los valores ingresados.",
+        "error": "No pudimos completar la operación.",
+        "incompleteWarning": "Faltan parámetros obligatorios. La integración se guardará como incompleta y no podrá sincronizar.",
+        "saveIncomplete": "Guardar incompleta",
+        "allOrigins": "Todos los orígenes permitidos",
+        "noOrigins": "Ningún origen",
+        "selectOrigins": "Elegir orígenes",
+        "noParameters": "No requiere parámetros.",
+        "noPermissions": "No solicita permisos.",
+        "notSpecified": "Sin configurar",
+        "yes": "Sí",
+        "no": "No",
+        "statuses": {
+            "OK": "Completa",
+            "INCOMPLETE": "Incompleta",
+            "UNAUTHORIZED": "No autorizada"
+        },
+        "operationStatuses": {
+            "ACTIVE": "Activa",
+            "PAUSED": "Suspendida"
+        }
     }
 }

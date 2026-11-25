@@ -116,3 +116,19 @@ export type Instance = {
   operation_status: InstanceOperationStatus;
   created_at: string;
 };
+
+
+export const listInstancesSchema = z.object({
+  project_id: z.uuid(),
+  name: z.string().trim().max(120).optional(),
+  status: z.enum(instanceStatuses).optional(),
+  limit: z.coerce.number()
+    .int()
+    .min(1)
+    .max(200)
+    .default(50),
+  cursor: z.string().max(512).optional(),
+});
+
+export type ListInstancesInput =
+  z.infer<typeof listInstancesSchema>;

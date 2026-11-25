@@ -316,5 +316,48 @@
             "can_send_delete": "Send deletions",
             "can_receive_delete": "Receive deletions"
         }
+    },
+    "Instances": {
+        "title": "Integrations",
+        "description": "Manage connections between your systems.",
+        "create": "New integration",
+        "install": "Install connector",
+        "name": "Integration name",
+        "namePlaceholder": "My integration",
+        "connector": "Connector",
+        "parameters": "Parameters",
+        "permissions": "Permissions",
+        "origins": "Origins",
+        "required": "Required",
+        "optional": "Optional",
+        "encrypted": "Encrypted value",
+        "empty": "No integrations yet",
+        "emptyDescription": "Explore the catalog to connect your first system.",
+        "explore": "Explore connectors",
+        "configurationStatus": "Configuration",
+        "operationStatus": "Operation",
+        "installing": "Installing...",
+        "installed": "Integration created successfully.",
+        "invalid": "Check the values you entered.",
+        "error": "We could not complete the operation.",
+        "incompleteWarning": "Required parameters are missing. The integration will be saved as incomplete and cannot synchronize.",
+        "saveIncomplete": "Save incomplete",
+        "allOrigins": "All allowed origins",
+        "noOrigins": "No origins",
+        "selectOrigins": "Choose origins",
+        "noParameters": "No parameters required.",
+        "noPermissions": "No permissions requested.",
+        "notSpecified": "Not configured",
+        "yes": "Yes",
+        "no": "No",
+        "statuses": {
+            "OK": "Complete",
+            "INCOMPLETE": "Incomplete",
+            "UNAUTHORIZED": "Unauthorized"
+        },
+        "operationStatuses": {
+            "ACTIVE": "Active",
+            "PAUSED": "Paused"
+        }
     }
 }

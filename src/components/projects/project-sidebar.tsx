@@ -15,6 +15,7 @@ import {
     Plus,
     Users,
     Compass,
+    Plug,
 } from "lucide-react";
 
 import {
@@ -138,6 +139,23 @@ export function ProjectSidebar({
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         )}
+
+                        {project.type === "BUSINESS" && (
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={
+                                        pathname.startsWith(`${base}/integrations`)
+                                    }
+                                >
+                                    <Link href={`${base}/integrations`}>
+                                        <Plug />
+                                        <span>{t("integrations")}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        )}
+
                     </SidebarMenu>
                 </SidebarGroup>
 
