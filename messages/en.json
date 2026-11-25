@@ -282,7 +282,17 @@
         "noAuthorizedProjects": "There are no authorized Business projects.",
         "invalidProjectId": "Enter a valid UUID that has not already been added.",
         "credentialsDescription": "Manage the credential used by the external system to authenticate.",
-        "terminalStatus": "The connector is deprecated and its status cannot be changed."
+        "terminalStatus": "The connector is deprecated and its status cannot be changed.",
+        "installations": "Installations",
+        "installationsDescription": "View the operational status of this connector's installations.",
+        "installationId": "Installation ID",
+        "noInstallations": "This connector has no installations yet.",
+        "pending": "Pending",
+        "failed": "Failed",
+        "lastConfirmation": "Last confirmation",
+        "noConfirmations": "No confirmations",
+        "installationPrivacy": "For privacy, Business projects, their names and parameters are not displayed.",
+        "installationsLoadError": "Installations could not be loaded."
     },
     "Catalog": {
         "title": "Explore connectors",

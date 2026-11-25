@@ -156,3 +156,45 @@ export type InstanceDetail = Instance & {
   parameters: InstanceParameterDetail[];
   models_permissions: InstancePermission[];
 };
+
+
+export type ConnectorInstallation = {
+  instance_id: string;
+  status: InstanceStatus;
+  operation_status: InstanceOperationStatus;
+  created_at: string;
+  pending: number;
+  failed: number;
+  last_confirmed_at: string | null;
+};
+
+export type ConnectorInstance = Instance & {
+  paused_reason: string | null;
+};
+
+export const listInstallationsSchema = z.object({
+  connector_id: z.uuid(),
+  status: z.enum(instanceStatuses).optional(),
+  limit: z.coerce.number()
+    .int()
+    .min(1)
+    .max(200)
+    .default(50),
+  cursor: z.string().max(512).optional(),
+});
+
+export const listConnectorInstancesSchema = z.object({
+  status: z.enum(instanceStatuses).optional(),
+  limit: z.coerce.number()
+    .int()
+    .min(1)
+    .max(200)
+    .default(50),
+  cursor: z.string().max(512).optional(),
+});
+
+export type ListInstallationsInput =
+  z.infer<typeof listInstallationsSchema>;
+
+export type ListConnectorInstancesInput =
+  z.infer<typeof listConnectorInstancesSchema>;

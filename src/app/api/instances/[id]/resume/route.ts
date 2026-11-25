@@ -20,9 +20,18 @@ type Context = {
 };
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: Context
 ) {
+
+  if (request.headers.has("authorization")) {
+    return apiError(
+      "HUMAN_SESSION_REQUIRED",
+      "This operation requires a user session.",
+      401
+    );
+  }
+
   const auth = await requireApiUser();
 
   if (!auth.ok) return auth.response;

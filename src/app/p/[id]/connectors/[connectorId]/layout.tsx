@@ -85,6 +85,12 @@ async function ConnectorLayoutContent({
                     </Link>
                 </Button>
 
+                <Button variant="ghost" asChild>
+                    <Link href={`${base}/installations`}>
+                        {t("installations")}
+                    </Link>
+                </Button>
+
                 {canWrite && (
                     <Button variant="ghost" asChild>
                         <Link href={`${base}/credentials`}>

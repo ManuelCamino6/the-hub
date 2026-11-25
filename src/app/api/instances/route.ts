@@ -17,7 +17,36 @@ import { listInstances } from "@/lib/instances/service";
 import { apiPaginated } from "@/lib/api/response";
 import { decodeCursor } from "@/lib/api/pagination";
 
+
+import {
+  hasConnectorAuthorization,
+  getConnectorTokenHash,
+} from "@/lib/connectors/auth";
+
+import {
+  listConnectorInstances,
+} from "@/lib/instances/connector-service";
+
+import {
+  listDevelopmentInstallations,
+} from "@/lib/instances/development-service";
+
+import {
+  listInstallationsSchema,
+  listConnectorInstancesSchema,
+} from "@/lib/instances/schemas";
+
+
 export async function POST(request: NextRequest) {
+
+  if (request.headers.has("authorization")) {
+    return apiError(
+      "HUMAN_SESSION_REQUIRED",
+      "This operation requires a user session.",
+      401
+    );
+  }
+  
   const auth = await requireApiUser();
 
   if (!auth.ok) return auth.response;
@@ -61,36 +90,124 @@ export async function POST(request: NextRequest) {
 }
 
 
+
 export async function GET(request: NextRequest) {
-  const auth = await requireApiUser();
-
-  if (!auth.ok) return auth.response;
-
-  const parsed = listInstancesSchema.safeParse(
-    Object.fromEntries(
-      request.nextUrl.searchParams
-    )
+  const query = Object.fromEntries(
+    request.nextUrl.searchParams
   );
 
-  if (!parsed.success) {
-    return apiError(
-      "VALIDATION_ERROR",
-      "Invalid query.",
-      422
-    );
-  }
-
   try {
-    decodeCursor(parsed.data.cursor);
-  } catch {
-    return apiError(
-      "VALIDATION_ERROR",
-      "Invalid cursor.",
-      422
-    );
-  }
+    if (hasConnectorAuthorization(request)) {
+      const tokenHash =
+        getConnectorTokenHash(request);
 
-  try {
+      const parsed =
+        listConnectorInstancesSchema.safeParse(query);
+
+      if (!parsed.success) {
+        return apiError(
+          "VALIDATION_ERROR",
+          "Invalid filters.",
+          422
+        );
+      }
+
+      try {
+        decodeCursor(parsed.data.cursor);
+      } catch {
+        return apiError(
+          "INVALID_CURSOR",
+          "Invalid cursor.",
+          422
+        );
+      }
+
+      const result =
+        await listConnectorInstances(
+          tokenHash,
+          parsed.data
+        );
+
+      const response = apiPaginated(
+        result.data,
+        result.next_cursor
+      );
+
+      response.headers.set(
+        "Cache-Control",
+        "no-store"
+      );
+
+      return response;
+    }
+
+    const auth = await requireApiUser();
+
+    if (!auth.ok) return auth.response;
+
+    if (query.connector_id && query.project_id) {
+      return apiError(
+        "VALIDATION_ERROR",
+        "Use only one project or connector filter.",
+        422
+      );
+    }
+
+    if (query.connector_id) {
+      const parsed =
+        listInstallationsSchema.safeParse(query);
+
+      if (!parsed.success) {
+        return apiError(
+          "VALIDATION_ERROR",
+          "Invalid filters.",
+          422
+        );
+      }
+
+      try {
+        decodeCursor(parsed.data.cursor);
+      } catch {
+        return apiError(
+          "INVALID_CURSOR",
+          "Invalid cursor.",
+          422
+        );
+      }
+
+      const result =
+        await listDevelopmentInstallations(
+          auth.user.id,
+          parsed.data
+        );
+
+      return apiPaginated(
+        result.data,
+        result.next_cursor
+      );
+    }
+
+    const parsed =
+      listInstancesSchema.safeParse(query);
+
+    if (!parsed.success) {
+      return apiError(
+        "VALIDATION_ERROR",
+        "Invalid filters.",
+        422
+      );
+    }
+
+    try {
+      decodeCursor(parsed.data.cursor);
+    } catch {
+      return apiError(
+        "INVALID_CURSOR",
+        "Invalid cursor.",
+        422
+      );
+    }
+
     const result = await listInstances(
       auth.user.id,
       parsed.data
@@ -112,4 +229,7 @@ export async function GET(request: NextRequest) {
     return apiDatabaseError(error);
   }
 }
+
+
+
 

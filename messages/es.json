@@ -282,7 +282,17 @@
         "noAuthorizedProjects": "No hay proyectos Business autorizados.",
         "invalidProjectId": "Ingresá un UUID válido que no esté repetido.",
         "credentialsDescription": "Administrá la credencial utilizada por el sistema externo para autenticarse.",
-        "terminalStatus": "El conector está obsoleto y no puede cambiar de estado."
+        "terminalStatus": "El conector está obsoleto y no puede cambiar de estado.",
+        "installations": "Instalaciones",
+        "installationsDescription": "Consultá el estado operativo de las instalaciones de este conector.",
+        "installationId": "ID de instalación",
+        "noInstallations": "Este conector todavía no tiene instalaciones.",
+        "pending": "Pendientes",
+        "failed": "Fallidas",
+        "lastConfirmation": "Última confirmación",
+        "noConfirmations": "Sin confirmaciones",
+        "installationPrivacy": "Por privacidad, no se muestran los proyectos Business, sus nombres ni sus parámetros.",
+        "installationsLoadError": "No se pudieron cargar las instalaciones."
     },
     "Catalog": {
         "title": "Explorar conectores",
