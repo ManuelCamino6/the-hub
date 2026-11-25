@@ -377,6 +377,23 @@
         "incompleteStatusWarning": "Complete the required parameters to enable configuration.",
         "grantedPermissions": "Granted permissions",
         "noGrantedPermissions": "No permissions granted.",
-        "connectorStatus": "Connector status"
+        "connectorStatus": "Connector status",
+        "resume": "Resume integration",
+        "resumeDescription": "The integration will be enabled to operate again if its configuration and authorization are valid.",
+        "resumeUnavailable": "To resume this integration, the connector must be available and its configuration must be valid.",
+        "resuming": "Resuming...",
+        "deleteInstance": "Delete integration",
+        "deleteDescription": "The integration will stop operating. Data and history will be preserved. This action cannot be undone from the application.",
+        "deleting": "Deleting...",
+        "dangerZone": "Danger zone",
+        "operation": "Operation",
+        "pausedReason": "Pause reason",
+        "pausedReasons": {
+            "CONNECTOR_IN_DEVELOPMENT": "The connector returned to development.",
+            "CONNECTOR_DELETED": "The connector was deleted.",
+            "INSTANCE_DELETED": "The integration was deleted.",
+            "UNKNOWN": "Operation was paused."
+        },
+        "lifecycleError": "The operation could not be completed. Check the integration status and try again."
     }
 }

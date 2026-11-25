@@ -7,49 +7,49 @@ import { getDatabase } from "@/lib/db";
 import { DomainError } from "@/lib/api/domain-error";
 
 import {
-  normalizeParameter,
-  type ParameterDefinition,
+    normalizeParameter,
+    type ParameterDefinition,
 } from "./parameters";
 
 import {
-  validateGrantedPermissions,
-  getOriginIds,
+    validateGrantedPermissions,
+    getOriginIds,
 } from "./permissions";
 
 import type {
-  CreateInstanceInput,
-  InstanceStatus,
-  InstancePermission,
+    CreateInstanceInput,
+    InstanceStatus,
+    InstancePermission,
 } from "./schemas";
 
 import type {
-  InstanceDetail,
-  InstanceParameterDetail,
-  UpdateInstanceInput,
+    InstanceDetail,
+    InstanceParameterDetail,
+    UpdateInstanceInput,
 } from "./schemas";
 
 import { isDeepStrictEqual } from "node:util";
 
 import {
-  encrypt,
-  decrypt,
+    encrypt,
+    decrypt,
 } from "@/lib/security/encryption";
 
 import type {
-  ModelPermission,
+    ModelPermission,
 } from "@/lib/connectors/schemas";
 
 import type { TransactionSql } from "postgres";
 
 export async function createInstance(
-  userId: string,
-  input: CreateInstanceInput
+    userId: string,
+    input: CreateInstanceInput
 ) {
-  const sql = getDatabase();
+    const sql = getDatabase();
 
-  return sql.begin(async (tx) => {
-    // Bloquear los proyectos involucrados.
-    const projects = await tx`
+    return sql.begin(async (tx) => {
+        // Bloquear los proyectos involucrados.
+        const projects = await tx`
       select p.id, p.type, p.deleted_at
       from platform.projects p
       where p.id = ${input.project_id}
@@ -62,35 +62,35 @@ export async function createInstance(
       for update
     `;
 
-    const business = projects.find(
-      (project) => project.id === input.project_id
-    );
+        const business = projects.find(
+            (project) => project.id === input.project_id
+        );
 
-    if (
-      !business ||
-      business.type !== "BUSINESS" ||
-      business.deleted_at
-    ) {
-      throw new DomainError("PROJECT_NOT_FOUND", 404);
-    }
+        if (
+            !business ||
+            business.type !== "BUSINESS" ||
+            business.deleted_at
+        ) {
+            throw new DomainError("PROJECT_NOT_FOUND", 404);
+        }
 
-    const [membership] = await tx`
+        const [membership] = await tx`
       select role
       from platform.users_per_project
       where project_id = ${input.project_id}
         and user_id = ${userId}
     `;
 
-    if (!membership) {
-      throw new DomainError("PROJECT_NOT_FOUND", 404);
-    }
+        if (!membership) {
+            throw new DomainError("PROJECT_NOT_FOUND", 404);
+        }
 
-    if (membership.role === "VIEWER") {
-      throw new DomainError("FORBIDDEN", 403);
-    }
+        if (membership.role === "VIEWER") {
+            throw new DomainError("FORBIDDEN", 403);
+        }
 
-    // Coordinar con las modificaciones del conector.
-    const [connector] = await tx`
+        // Coordinar con las modificaciones del conector.
+        const [connector] = await tx`
       select id
       from platform.connectors
       where id = ${input.connector_id}
@@ -98,28 +98,28 @@ export async function createInstance(
       for update
     `;
 
-    if (!connector) {
-      throw new DomainError("CONNECTOR_NOT_FOUND", 404);
-    }
+        if (!connector) {
+            throw new DomainError("CONNECTOR_NOT_FOUND", 404);
+        }
 
-    const [availability] = await tx`
+        const [availability] = await tx`
       select platform.connector_available_for(
         ${input.project_id}::uuid,
         ${input.connector_id}::uuid
       ) as available
     `;
 
-    if (!availability.available) {
-      throw new DomainError("CONNECTOR_NOT_AVAILABLE", 409);
-    }
+        if (!availability.available) {
+            throw new DomainError("CONNECTOR_NOT_AVAILABLE", 409);
+        }
 
-    const definitions = await tx<ParameterDefinition[]>`
+        const definitions = await tx<ParameterDefinition[]>`
       select key, type, required, encrypted
       from platform.connectors_parameters
       where connector_id = ${input.connector_id}
     `;
 
-    const requested = await tx<ModelPermission[]>`
+        const requested = await tx<ModelPermission[]>`
       select
         cp.table_id,
         cp.can_list,
@@ -137,70 +137,70 @@ export async function createInstance(
         and v.active
     `;
 
-    try {
-      validateGrantedPermissions(
-        requested,
-        input.models_permissions
-      );
-    } catch {
-      throw new DomainError("INVALID_MODEL_PERMISSION");
-    }
+        try {
+            validateGrantedPermissions(
+                requested,
+                input.models_permissions
+            );
+        } catch {
+            throw new DomainError("INVALID_MODEL_PERMISSION");
+        }
 
-    const definitionsByKey = new Map(
-      definitions.map((item) => [item.key, item])
-    );
-
-    const instanceId = randomUUID();
-
-    const parameters: {
-      instance_id: string;
-      key: string;
-      value: string | null;
-      encrypted: boolean;
-      type: ParameterDefinition["type"];
-    }[] = [];
-
-    for (const parameter of input.parameters) {
-      const definition =
-        definitionsByKey.get(parameter.key);
-
-      if (!definition) {
-        throw new DomainError("UNKNOWN_PARAMETER");
-      }
-
-      let value: string | null;
-
-      try {
-        value = normalizeParameter(
-          definition,
-          parameter.value
+        const definitionsByKey = new Map(
+            definitions.map((item) => [item.key, item])
         );
-      } catch {
-        throw new DomainError("INVALID_PARAMETER");
-      }
 
-      if (value !== null && definition.encrypted) {
-        value = encrypt(
-          value,
-          `${instanceId}:${definition.key}`
+        const instanceId = randomUUID();
+
+        const parameters: {
+            instance_id: string;
+            key: string;
+            value: string | null;
+            encrypted: boolean;
+            type: ParameterDefinition["type"];
+        }[] = [];
+
+        for (const parameter of input.parameters) {
+            const definition =
+                definitionsByKey.get(parameter.key);
+
+            if (!definition) {
+                throw new DomainError("UNKNOWN_PARAMETER");
+            }
+
+            let value: string | null;
+
+            try {
+                value = normalizeParameter(
+                    definition,
+                    parameter.value
+                );
+            } catch {
+                throw new DomainError("INVALID_PARAMETER");
+            }
+
+            if (value !== null && definition.encrypted) {
+                value = encrypt(
+                    value,
+                    `${instanceId}:${definition.key}`
+                );
+            }
+
+            parameters.push({
+                instance_id: instanceId,
+                key: definition.key,
+                value,
+                encrypted: definition.encrypted,
+                type: definition.type,
+            });
+        }
+
+        const origins = getOriginIds(
+            input.models_permissions
         );
-      }
 
-      parameters.push({
-        instance_id: instanceId,
-        key: definition.key,
-        value,
-        encrypted: definition.encrypted,
-        type: definition.type,
-      });
-    }
-
-    const origins = getOriginIds(
-      input.models_permissions
-    );
-
-    if (origins.length) {
-      const validOrigins = await tx`
+        if (origins.length) {
+            const validOrigins = await tx`
         select id
         from platform.instances
         where project_id = ${input.project_id}
@@ -208,12 +208,12 @@ export async function createInstance(
           and id = any(${tx.array(origins)}::uuid[])
       `;
 
-      if (validOrigins.length !== origins.length) {
-        throw new DomainError("INVALID_ORIGIN");
-      }
-    }
+            if (validOrigins.length !== origins.length) {
+                throw new DomainError("INVALID_ORIGIN");
+            }
+        }
 
-    await tx`
+        await tx`
       insert into platform.instances (
         id, project_id, connector_id, name
       )
@@ -225,62 +225,62 @@ export async function createInstance(
       )
     `;
 
-    if (parameters.length) {
-      await tx`
+        if (parameters.length) {
+            await tx`
         insert into platform.instances_parameters
         ${tx(
-          parameters,
-          "instance_id",
-          "key",
-          "value",
-          "encrypted",
-          "type"
-        )}
+                parameters,
+                "instance_id",
+                "key",
+                "value",
+                "encrypted",
+                "type"
+            )}
       `;
-    }
+        }
 
-    for (const permission of input.models_permissions) {
-      await insertPermission(
-        tx,
-        instanceId,
-        permission
-      );
-    }
+        for (const permission of input.models_permissions) {
+            await insertPermission(
+                tx,
+                instanceId,
+                permission
+            );
+        }
 
-    const [result] = await tx<{
-      status: InstanceStatus;
-    }[]>`
+        const [result] = await tx<{
+            status: InstanceStatus;
+        }[]>`
       select platform.recalculate_instance(
         ${instanceId}::uuid
       ) as status
     `;
 
-    await tx`
+        await tx`
       select platform.emit_instance_setting(
         ${instanceId}::uuid,
         'INSTANCE_CREATED'
       )
     `;
 
-    return {
-      id: instanceId,
-      status: result.status,
-    };
-  });
+        return {
+            id: instanceId,
+            status: result.status,
+        };
+    });
 }
 
 async function insertPermission(
-  tx: TransactionSql,
-  instanceId: string,
-  permission: InstancePermission
+    tx: TransactionSql,
+    instanceId: string,
+    permission: InstancePermission
 ) {
-  function origins(value: string[] | null) {
-    return value === null
-      ? null
-      : tx.array(value);
-  }
+    function origins(value: string[] | null) {
+        return value === null
+            ? null
+            : tx.array(value);
+    }
 
-  await tx`
+    await tx`
     insert into platform.instances_models_permissions (
       instance_id,
       table_id,
@@ -314,23 +314,23 @@ async function insertPermission(
 
 
 import {
-  decodeCursor,
-  paginate,
+    decodeCursor,
+    paginate,
 } from "@/lib/api/pagination";
 
 import type {
-  Instance,
-  ListInstancesInput,
+    Instance,
+    ListInstancesInput,
 } from "./schemas";
 
 export async function listInstances(
-  userId: string,
-  input: ListInstancesInput
+    userId: string,
+    input: ListInstancesInput
 ) {
-  const sql = getDatabase();
-  const cursor = decodeCursor(input.cursor);
+    const sql = getDatabase();
+    const cursor = decodeCursor(input.cursor);
 
-  const [membership] = await sql`
+    const [membership] = await sql`
     select m.role
     from platform.users_per_project m
     join platform.projects p
@@ -341,11 +341,11 @@ export async function listInstances(
       and p.deleted_at is null
   `;
 
-  if (!membership) {
-    throw new DomainError("PROJECT_NOT_FOUND", 404);
-  }
+    if (!membership) {
+        throw new DomainError("PROJECT_NOT_FOUND", 404);
+    }
 
-  const rows = await sql<Instance[]>`
+    const rows = await sql<Instance[]>`
     select
       i.id,
       i.project_id,
@@ -372,50 +372,50 @@ export async function listInstances(
       and p.type = 'BUSINESS'
 
       ${input.name
-        ? sql`and strpos(
+            ? sql`and strpos(
             lower(i.name),
             lower(${input.name})
           ) > 0`
-        : sql``}
+            : sql``}
 
       ${input.status
-        ? sql`and i.status = ${input.status}`
-        : sql``}
+            ? sql`and i.status = ${input.status}`
+            : sql``}
 
       ${cursor
-        ? sql`and (i.created_at, i.id) <
+            ? sql`and (i.created_at, i.id) <
             (
               ${cursor.created_at}::timestamptz,
               ${cursor.id}::uuid
             )`
-        : sql``}
+            : sql``}
 
     order by i.created_at desc, i.id desc
     limit ${input.limit + 1}
   `;
 
-  return paginate(rows, input.limit);
+    return paginate(rows, input.limit);
 }
 
 
 export async function getInstance(
-  userId: string,
-  instanceId: string
+    userId: string,
+    instanceId: string
 ): Promise<InstanceDetail> {
-  const sql = getDatabase();
+    const sql = getDatabase();
 
-  return sql.begin(async (tx) => {
-    await tx`
+    return sql.begin(async (tx) => {
+        await tx`
       set transaction isolation level repeatable read
       read only
     `;
 
-    const [instance] = await tx<
-      Omit<
-        InstanceDetail,
-        "parameters" | "models_permissions"
-      >[]
-    >`
+        const [instance] = await tx<
+            Omit<
+                InstanceDetail,
+                "parameters" | "models_permissions"
+            >[]
+        >`
       select
         i.id,
         i.project_id,
@@ -444,16 +444,16 @@ export async function getInstance(
         and p.type = 'BUSINESS'
     `;
 
-    if (!instance) {
-      throw new DomainError(
-        "INSTANCE_NOT_FOUND",
-        404
-      );
-    }
+        if (!instance) {
+            throw new DomainError(
+                "INSTANCE_NOT_FOUND",
+                404
+            );
+        }
 
-    const parameters = await tx<
-      InstanceParameterDetail[]
-    >`
+        const parameters = await tx<
+            InstanceParameterDetail[]
+        >`
       select
         d.key,
         d.type,
@@ -479,9 +479,9 @@ export async function getInstance(
       order by d.key
     `;
 
-    const permissions = await tx<
-      InstancePermission[]
-    >`
+        const permissions = await tx<
+            InstancePermission[]
+        >`
       select
         table_id,
         can_list,
@@ -500,35 +500,35 @@ export async function getInstance(
       order by table_id
     `;
 
-    return {
-      ...instance,
-
-      parameters: parameters.map((parameter) => {
-        if (!parameter.encrypted) {
-          return parameter;
-        }
-
         return {
-          key: parameter.key,
-          type: parameter.type,
-          required: parameter.required,
-          encrypted: true,
-          configured: parameter.configured,
-        };
-      }),
+            ...instance,
 
-      models_permissions: permissions,
-    };
-  });
+            parameters: parameters.map((parameter) => {
+                if (!parameter.encrypted) {
+                    return parameter;
+                }
+
+                return {
+                    key: parameter.key,
+                    type: parameter.type,
+                    required: parameter.required,
+                    encrypted: true,
+                    configured: parameter.configured,
+                };
+            }),
+
+            models_permissions: permissions,
+        };
+    });
 }
 
 
 async function lockInstanceForWrite(
-  tx: TransactionSql,
-  userId: string,
-  instanceId: string
+    tx: TransactionSql,
+    userId: string,
+    instanceId: string
 ) {
-  const [reference] = await tx`
+    const [reference] = await tx`
     select
       i.project_id,
       i.connector_id,
@@ -547,14 +547,14 @@ async function lockInstanceForWrite(
       and i.deleted_at is null
   `;
 
-  if (!reference) {
-    throw new DomainError(
-      "INSTANCE_NOT_FOUND",
-      404
-    );
-  }
+    if (!reference) {
+        throw new DomainError(
+            "INSTANCE_NOT_FOUND",
+            404
+        );
+    }
 
-  const projects = await tx`
+    const projects = await tx`
     select id, type, deleted_at
     from platform.projects
 
@@ -567,51 +567,51 @@ async function lockInstanceForWrite(
     for update
   `;
 
-  const business = projects.find(
-    (project) =>
-      project.id === reference.project_id
-  );
-
-  if (
-    !business ||
-    business.deleted_at ||
-    business.type !== "BUSINESS"
-  ) {
-    throw new DomainError(
-      "PROJECT_NOT_FOUND",
-      404
+    const business = projects.find(
+        (project) =>
+            project.id === reference.project_id
     );
-  }
 
-  const [membership] = await tx`
+    if (
+        !business ||
+        business.deleted_at ||
+        business.type !== "BUSINESS"
+    ) {
+        throw new DomainError(
+            "PROJECT_NOT_FOUND",
+            404
+        );
+    }
+
+    const [membership] = await tx`
     select role
     from platform.users_per_project
     where project_id = ${reference.project_id}
       and user_id = ${userId}
   `;
 
-  if (!membership) {
-    throw new DomainError(
-      "INSTANCE_NOT_FOUND",
-      404
-    );
-  }
+    if (!membership) {
+        throw new DomainError(
+            "INSTANCE_NOT_FOUND",
+            404
+        );
+    }
 
-  if (
-    membership.role !== "ADMIN" &&
-    membership.role !== "EDITOR"
-  ) {
-    throw new DomainError("FORBIDDEN", 403);
-  }
+    if (
+        membership.role !== "ADMIN" &&
+        membership.role !== "EDITOR"
+    ) {
+        throw new DomainError("FORBIDDEN", 403);
+    }
 
-  const [connector] = await tx`
+    const [connector] = await tx`
     select id, status, deleted_at
     from platform.connectors
     where id = ${reference.connector_id}
     for update
   `;
 
-  const [instance] = await tx`
+    const [instance] = await tx`
     select *
     from platform.instances
     where id = ${instanceId}
@@ -619,51 +619,51 @@ async function lockInstanceForWrite(
     for update
   `;
 
-  if (!instance || !connector) {
-    throw new DomainError(
-      "INSTANCE_NOT_FOUND",
-      404
-    );
-  }
+    if (!instance || !connector) {
+        throw new DomainError(
+            "INSTANCE_NOT_FOUND",
+            404
+        );
+    }
 
-  return {
-    instance,
-    connector,
-  };
+    return {
+        instance,
+        connector,
+    };
 }
 
 
 export async function updateInstance(
-  userId: string,
-  instanceId: string,
-  input: UpdateInstanceInput
+    userId: string,
+    instanceId: string,
+    input: UpdateInstanceInput
 ) {
-  const sql = getDatabase();
+    const sql = getDatabase();
 
-  return sql.begin(async (tx) => {
-    const { instance, connector } =
-      await lockInstanceForWrite(
-        tx,
-        userId,
-        instanceId
-      );
+    return sql.begin(async (tx) => {
+        const { instance, connector } =
+            await lockInstanceForWrite(
+                tx,
+                userId,
+                instanceId
+            );
 
-    if (connector.deleted_at) {
-      throw new DomainError(
-        "CONNECTOR_DELETED",
-        409
-      );
-    }
+        if (connector.deleted_at) {
+            throw new DomainError(
+                "CONNECTOR_DELETED",
+                409
+            );
+        }
 
-    const definitions = await tx<
-      ParameterDefinition[]
-    >`
+        const definitions = await tx<
+            ParameterDefinition[]
+        >`
       select key, type, required, encrypted
       from platform.connectors_parameters
       where connector_id = ${connector.id}
     `;
 
-    const requested = await tx<ModelPermission[]>`
+        const requested = await tx<ModelPermission[]>`
       select
         cp.table_id,
         cp.can_list,
@@ -687,23 +687,23 @@ export async function updateInstance(
         and v.active
     `;
 
-    try {
-      validateGrantedPermissions(
-        requested,
-        input.models_permissions
-      );
-    } catch {
-      throw new DomainError(
-        "INVALID_MODEL_PERMISSION"
-      );
-    }
+        try {
+            validateGrantedPermissions(
+                requested,
+                input.models_permissions
+            );
+        } catch {
+            throw new DomainError(
+                "INVALID_MODEL_PERMISSION"
+            );
+        }
 
-    const origins = getOriginIds(
-      input.models_permissions
-    );
+        const origins = getOriginIds(
+            input.models_permissions
+        );
 
-    if (origins.length) {
-      const validOrigins = await tx`
+        if (origins.length) {
+            const validOrigins = await tx`
         select id
         from platform.instances
         where project_id = ${instance.project_id}
@@ -713,131 +713,131 @@ export async function updateInstance(
           )
       `;
 
-      if (validOrigins.length !== origins.length) {
-        throw new DomainError("INVALID_ORIGIN");
-      }
-    }
+            if (validOrigins.length !== origins.length) {
+                throw new DomainError("INVALID_ORIGIN");
+            }
+        }
 
-    const stored = await tx<{
-      key: string;
-      value: string | null;
-      encrypted: boolean;
-      type: ParameterDefinition["type"];
-    }[]>`
+        const stored = await tx<{
+            key: string;
+            value: string | null;
+            encrypted: boolean;
+            type: ParameterDefinition["type"];
+        }[]>`
       select key, value, encrypted, type
       from platform.instances_parameters
       where instance_id = ${instanceId}
     `;
 
-    const storedByKey = new Map(
-      stored.map((item) => [item.key, item])
-    );
-
-    const incomingByKey = new Map(
-      input.parameters.map((item) => [
-        item.key,
-        item.value,
-      ])
-    );
-
-    const definitionsByKey = new Map(
-      definitions.map((item) => [
-        item.key,
-        item,
-      ])
-    );
-
-    for (const parameter of input.parameters) {
-      if (!definitionsByKey.has(parameter.key)) {
-        throw new DomainError(
-          "UNKNOWN_PARAMETER"
+        const storedByKey = new Map(
+            stored.map((item) => [item.key, item])
         );
-      }
-    }
 
-    let parametersChanged = false;
-
-    for (const definition of definitions) {
-      const previous = storedByKey.get(
-        definition.key
-      );
-
-      const provided = incomingByKey.has(
-        definition.key
-      );
-
-      // Un secreto omitido conserva su valor.
-      if (!provided && definition.encrypted) {
-        continue;
-      }
-
-      let normalized: string | null;
-
-      try {
-        normalized = normalizeParameter(
-          definition,
-          incomingByKey.get(definition.key)
+        const incomingByKey = new Map(
+            input.parameters.map((item) => [
+                item.key,
+                item.value,
+            ])
         );
-      } catch {
-        throw new DomainError(
-          "INVALID_PARAMETER"
+
+        const definitionsByKey = new Map(
+            definitions.map((item) => [
+                item.key,
+                item,
+            ])
         );
-      }
 
-      // No borrar un secreto obligatorio.
-      if (
-        definition.encrypted &&
-        definition.required &&
-        normalized === null
-      ) {
-        throw new DomainError(
-          "REQUIRED_SECRET_CANNOT_BE_CLEARED"
-        );
-      }
+        for (const parameter of input.parameters) {
+            if (!definitionsByKey.has(parameter.key)) {
+                throw new DomainError(
+                    "UNKNOWN_PARAMETER"
+                );
+            }
+        }
 
-      let previousValue = previous?.value ?? null;
+        let parametersChanged = false;
 
-      const compatible =
-        previous?.type === definition.type &&
-        previous?.encrypted === definition.encrypted;
+        for (const definition of definitions) {
+            const previous = storedByKey.get(
+                definition.key
+            );
 
-      if (!compatible) {
-        previousValue = null;
-      }
+            const provided = incomingByKey.has(
+                definition.key
+            );
 
-      if (
-        previousValue !== null &&
-        definition.encrypted
-      ) {
-        previousValue = decrypt(
-          previousValue,
-          `${instanceId}:${definition.key}`
-        );
-      }
+            // Un secreto omitido conserva su valor.
+            if (!provided && definition.encrypted) {
+                continue;
+            }
 
-      if (
-        previousValue === normalized &&
-        compatible
-      ) {
-        continue;
-      }
+            let normalized: string | null;
 
-      if (!previous && normalized === null) {
-        continue;
-      }
+            try {
+                normalized = normalizeParameter(
+                    definition,
+                    incomingByKey.get(definition.key)
+                );
+            } catch {
+                throw new DomainError(
+                    "INVALID_PARAMETER"
+                );
+            }
 
-      parametersChanged = true;
+            // No borrar un secreto obligatorio.
+            if (
+                definition.encrypted &&
+                definition.required &&
+                normalized === null
+            ) {
+                throw new DomainError(
+                    "REQUIRED_SECRET_CANNOT_BE_CLEARED"
+                );
+            }
 
-      const value =
-        normalized !== null &&
-        definition.encrypted
-          ? encrypt(
-              normalized,
-              `${instanceId}:${definition.key}`
-            )
-          : normalized;
+            let previousValue = previous?.value ?? null;
 
-      await tx`
+            const compatible =
+                previous?.type === definition.type &&
+                previous?.encrypted === definition.encrypted;
+
+            if (!compatible) {
+                previousValue = null;
+            }
+
+            if (
+                previousValue !== null &&
+                definition.encrypted
+            ) {
+                previousValue = decrypt(
+                    previousValue,
+                    `${instanceId}:${definition.key}`
+                );
+            }
+
+            if (
+                previousValue === normalized &&
+                compatible
+            ) {
+                continue;
+            }
+
+            if (!previous && normalized === null) {
+                continue;
+            }
+
+            parametersChanged = true;
+
+            const value =
+                normalized !== null &&
+                    definition.encrypted
+                    ? encrypt(
+                        normalized,
+                        `${instanceId}:${definition.key}`
+                    )
+                    : normalized;
+
+            await tx`
         insert into platform.instances_parameters (
           instance_id,
           key,
@@ -859,11 +859,11 @@ export async function updateInstance(
           encrypted = excluded.encrypted,
           type = excluded.type
       `;
-    }
+        }
 
-    const previousPermissions = await tx<
-      InstancePermission[]
-    >`
+        const previousPermissions = await tx<
+            InstancePermission[]
+        >`
       select
         table_id,
         can_list,
@@ -880,123 +880,111 @@ export async function updateInstance(
       where instance_id = ${instanceId}
     `;
 
-    function canonical(
-      permissions: InstancePermission[]
-    ) {
-      return permissions
-        .map((permission) => ({
-          ...permission,
+        function canonical(
+            permissions: InstancePermission[]
+        ) {
+            return permissions
+                .map((permission) => ({
+                    ...permission,
 
-          can_receive_post_from:
-            permission.can_receive_post_from
-              ?.slice().sort() ?? null,
+                    can_receive_post_from:
+                        permission.can_receive_post_from
+                            ?.slice().sort() ?? null,
 
-          can_receive_update_from:
-            permission.can_receive_update_from
-              ?.slice().sort() ?? null,
+                    can_receive_update_from:
+                        permission.can_receive_update_from
+                            ?.slice().sort() ?? null,
 
-          can_receive_delete_from:
-            permission.can_receive_delete_from
-              ?.slice().sort() ?? null,
-        }))
-        .sort((a, b) =>
-          a.table_id.localeCompare(b.table_id)
-        );
-    }
+                    can_receive_delete_from:
+                        permission.can_receive_delete_from
+                            ?.slice().sort() ?? null,
+                }))
+                .sort((a, b) =>
+                    a.table_id.localeCompare(b.table_id)
+                );
+        }
 
-    const permissionsChanged =
-      !isDeepStrictEqual(
-        canonical(previousPermissions),
-        canonical(input.models_permissions)
-      );
+        const permissionsChanged =
+            !isDeepStrictEqual(
+                canonical(previousPermissions),
+                canonical(input.models_permissions)
+            );
 
-    if (permissionsChanged) {
-      await tx`
+        if (permissionsChanged) {
+            await tx`
         delete from
           platform.instances_models_permissions
         where instance_id = ${instanceId}
       `;
 
-      for (
-        const permission of input.models_permissions
-      ) {
-        await insertPermission(
-          tx,
-          instanceId,
-          permission
-        );
-      }
-    }
+            for (
+                const permission of input.models_permissions
+            ) {
+                await insertPermission(
+                    tx,
+                    instanceId,
+                    permission
+                );
+            }
+        }
 
-    const nameChanged =
-      instance.name !== input.name;
+        const nameChanged =
+            instance.name !== input.name;
 
-    if (nameChanged) {
-      await tx`
+        if (nameChanged) {
+            await tx`
         update platform.instances
         set name = ${input.name}
         where id = ${instanceId}
       `;
-    }
+        }
 
-    const [result] = await tx<{
-      status: InstanceStatus;
-    }[]>`
+        const [result] = await tx<{
+            status: InstanceStatus;
+        }[]>`
       select platform.recalculate_instance(
         ${instanceId}::uuid
       ) as status
     `;
 
-    const statusChanged =
-      instance.status !== result.status;
+        const statusChanged =
+            instance.status !== result.status;
 
-    if (
-      parametersChanged ||
-      permissionsChanged ||
-      statusChanged
-    ) {
-      await tx`
-        select platform.emit_instance_setting(
-          ${instanceId}::uuid,
-          'INSTANCE_UPDATED'
-        )
-      `;
+        if (
+            parametersChanged ||
+            permissionsChanged ||
+            statusChanged
+        ) {
+            await notifyInstanceChange(
+                tx,
+                instanceId,
+                instance.project_id,
+                input.name,
+                "INSTANCE_UPDATED"
+            );
+        }
 
-      await tx`
-        insert into platform.news (
-          project_id,
-          title,
-          content
-        )
-        values (
-          ${instance.project_id},
-          'INSTANCE_UPDATED',
-          ${input.name}
-        )
-      `;
-    }
-
-    return {
-      id: instanceId,
-      status: result.status,
-    };
-  });
+        return {
+            id: instanceId,
+            status: result.status,
+        };
+    });
 }
 
 
 export async function getInstalledConnectorDefinition(
-  userId: string,
-  instanceId: string
+    userId: string,
+    instanceId: string
 ) {
-  const sql = getDatabase();
+    const sql = getDatabase();
 
-  return sql.begin(async (tx) => {
-    await tx`
+    return sql.begin(async (tx) => {
+        await tx`
       set transaction isolation level repeatable read
       read only
     `;
 
-    const [connector] = await tx`
+        const [connector] = await tx`
       select
         c.id,
         c.name,
@@ -1026,25 +1014,25 @@ export async function getInstalledConnectorDefinition(
         and c.deleted_at is null
     `;
 
-    if (!connector) {
-      throw new DomainError(
-        "CONNECTOR_NOT_FOUND",
-        404
-      );
-    }
+        if (!connector) {
+            throw new DomainError(
+                "CONNECTOR_NOT_FOUND",
+                404
+            );
+        }
 
-    const parameters = await tx<
-      ParameterDefinition[]
-    >`
+        const parameters = await tx<
+            ParameterDefinition[]
+        >`
       select key, type, required, encrypted
       from platform.connectors_parameters
       where connector_id = ${connector.id}
       order by key
     `;
 
-    const models_permissions = await tx<
-      ModelPermission[]
-    >`
+        const models_permissions = await tx<
+            ModelPermission[]
+        >`
       select
         cp.table_id,
         cp.can_list,
@@ -1068,16 +1056,178 @@ export async function getInstalledConnectorDefinition(
         and v.active
     `;
 
+        return {
+            id: connector.id,
+            name: connector.name,
+            description: connector.description,
+            status: connector.status,
+            visibility: connector.visibility,
+            created_at: connector.created_at,
+            image_url: null,
+            parameters,
+            models_permissions,
+        };
+    });
+}
+
+
+async function notifyInstanceChange(
+    tx: TransactionSql,
+    instanceId: string,
+    projectId: string,
+    name: string,
+    event: string
+) {
+    await tx`
+    select platform.emit_instance_setting(
+      ${instanceId}::uuid,
+      ${event}
+    )
+  `;
+
+    await tx`
+    insert into platform.news (
+      project_id,
+      title,
+      content
+    )
+    values (
+      ${projectId},
+      ${event},
+      ${name}
+    )
+  `;
+}
+
+
+export async function resumeInstance(
+    userId: string,
+    instanceId: string
+) {
+    const sql = getDatabase();
+
+    return sql.begin(async (tx) => {
+        const { instance, connector } =
+            await lockInstanceForWrite(
+                tx,
+                userId,
+                instanceId
+            );
+
+        if (
+            connector.deleted_at ||
+            connector.status !== "AVAILABLE"
+        ) {
+            throw new DomainError(
+                "CONNECTOR_NOT_AVAILABLE",
+                409
+            );
+        }
+
+        const [result] = await tx<{
+            status: InstanceStatus;
+        }[]>`
+      select platform.recalculate_instance(
+        ${instanceId}::uuid
+      ) as status
+    `;
+
+        if (result.status !== "OK") {
+            throw new DomainError(
+                "INSTANCE_NOT_READY",
+                409
+            );
+        }
+
+        if (instance.operation_status === "ACTIVE") {
+            return {
+                id: instanceId,
+                operation_status: "ACTIVE" as const,
+            };
+        }
+
+        await tx`
+      update platform.instances
+      set
+        operation_status = 'ACTIVE',
+        paused_reason = null,
+        paused_at = null
+      where id = ${instanceId}
+    `;
+
+        await notifyInstanceChange(
+            tx,
+            instanceId,
+            instance.project_id,
+            instance.name,
+            "INSTANCE_RESUMED"
+        );
+
+        return {
+            id: instanceId,
+            operation_status: "ACTIVE" as const,
+        };
+    });
+}
+
+
+export async function deleteInstance(
+  userId: string,
+  instanceId: string
+) {
+  const sql = getDatabase();
+
+  return sql.begin(async (tx) => {
+    const { instance } =
+      await lockInstanceForWrite(
+        tx,
+        userId,
+        instanceId
+      );
+
+    await tx`
+      update platform.instances
+      set
+        operation_status = 'PAUSED',
+        paused_reason = 'INSTANCE_DELETED',
+        paused_at = now()
+      where id = ${instanceId}
+    `;
+
+    await tx`
+      update protocol.propagations
+      set
+        status = 'EXPIRED',
+        updated_at = now()
+      where instance_id = ${instanceId}
+        and status = 'PENDING'
+    `;
+
+    await tx`
+      update protocol.batches
+      set
+        status = 'DISCARDED',
+        closed_at = now()
+      where instance_id = ${instanceId}
+        and status = 'OPEN'
+    `;
+
+    await notifyInstanceChange(
+      tx,
+      instanceId,
+      instance.project_id,
+      instance.name,
+      "INSTANCE_DELETED"
+    );
+
+    await tx`
+      update platform.instances
+      set deleted_at = now()
+      where id = ${instanceId}
+    `;
+
     return {
-      id: connector.id,
-      name: connector.name,
-      description: connector.description,
-      status: connector.status,
-      visibility: connector.visibility,
-      created_at: connector.created_at,
-      image_url: null,
-      parameters,
-      models_permissions,
+      id: instanceId,
     };
   });
 }

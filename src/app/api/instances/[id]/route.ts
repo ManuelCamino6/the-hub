@@ -13,6 +13,7 @@ import {
 import { DomainError } from "@/lib/api/domain-error";
 
 import {
+    deleteInstance,
   getInstance,
   updateInstance,
 } from "@/lib/instances/service";
@@ -111,6 +112,37 @@ export async function PUT(
       auth.user.id,
       id,
       parsed.data
+    );
+
+    return apiSuccess(result);
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: Context
+) {
+  const auth = await requireApiUser();
+
+  if (!auth.ok) return auth.response;
+
+  const { id } = await params;
+
+  if (!z.uuid().safeParse(id).success) {
+    return apiError(
+      "NOT_FOUND",
+      "Instance not found.",
+      404
+    );
+  }
+
+  try {
+    const result = await deleteInstance(
+      auth.user.id,
+      id
     );
 
     return apiSuccess(result);

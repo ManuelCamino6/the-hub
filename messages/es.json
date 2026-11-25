@@ -377,6 +377,23 @@
         "incompleteStatusWarning": "Completá los parámetros obligatorios para habilitar la configuración.",
         "grantedPermissions": "Permisos concedidos",
         "noGrantedPermissions": "No hay permisos concedidos.",
-        "connectorStatus": "Estado del conector"
+        "connectorStatus": "Estado del conector",
+        "resume": "Reactivar integración",
+        "resumeDescription": "La integración volverá a estar habilitada para operar si su configuración y autorización son válidas.",
+        "resumeUnavailable": "Para reactivar esta integración, el conector debe estar disponible y la configuración debe ser válida.",
+        "resuming": "Reactivando...",
+        "deleteInstance": "Eliminar integración",
+        "deleteDescription": "La integración dejará de operar. Se conservarán los datos y el historial. Esta acción no se puede deshacer desde la aplicación.",
+        "deleting": "Eliminando...",
+        "dangerZone": "Zona de peligro",
+        "operation": "Operación",
+        "pausedReason": "Motivo de suspensión",
+        "pausedReasons": {
+            "CONNECTOR_IN_DEVELOPMENT": "El conector volvió a desarrollo.",
+            "CONNECTOR_DELETED": "El conector fue eliminado.",
+            "INSTANCE_DELETED": "La integración fue eliminada.",
+            "UNKNOWN": "La operación fue suspendida."
+        },
+        "lifecycleError": "No se pudo completar la operación. Revisá el estado de la integración e intentá nuevamente."
     }
 }
