@@ -13,6 +13,10 @@ import { decodeCursor } from "@/lib/api/pagination";
 import { projectIdSchema } from "@/lib/projects/schemas";
 
 import {
+  deliverProjectInvitations,
+} from "@/lib/projects/invitation-service";
+
+import {
   listMembersSchema,
   upsertMembersSchema,
   removeMembersSchema,
@@ -100,9 +104,23 @@ async function handle(
         );
       }
 
-      return apiSuccess(
-        await upsertMembers(id, parsed.data)
+      const result = await upsertMembers(
+        id,
+        parsed.data
       );
+
+      const emailDelivery =
+        await deliverProjectInvitations(
+          id,
+          parsed.data.users.map(
+            (member) => member.email
+          )
+        );
+
+      return apiSuccess({
+        ...result,
+        email_delivery: emailDelivery,
+      });
     }
 
     const parsed = removeMembersSchema.safeParse(body);

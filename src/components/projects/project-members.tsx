@@ -13,6 +13,10 @@ import { Label } from "@/components/ui/label";
 import { RoleSelect } from "./role-select";
 
 import {
+    ResendInvitation,
+} from "@/components/projects/resend-invitation";
+
+import {
     Alert,
     AlertDescription,
 } from "@/components/ui/alert";
@@ -51,13 +55,16 @@ import {
 
 type Mode = "add" | "changeRole" | "remove";
 
+
 type Message =
     | "success"
     | "invited"
     | "invalid"
     | "lastAdmin"
     | "selfRole"
-    | "error";
+    | "error"
+    | "invitationSent"
+    | "invitationEmailFailed";
 
 type Props = {
     projectId: string;
@@ -154,13 +161,36 @@ export function ProjectMembers({
                 return;
             }
 
+
             setMode(null);
 
+            const emailDelivery = result.data?.email_delivery as
+                | {
+                    email: string;
+                    status: "SENT" | "FAILED" | "SKIPPED";
+                }[]
+                | undefined;
+
+            const emailFailed =
+                emailDelivery?.some(
+                    (delivery) => delivery.status === "FAILED"
+                ) ?? false;
+
+            const emailSent =
+                emailDelivery?.some(
+                    (delivery) => delivery.status === "SENT"
+                ) ?? false;
+
             setMessage(
-                result.data?.invited?.length
-                    ? "invited"
-                    : "success"
+                emailFailed
+                    ? "invitationEmailFailed"
+                    : emailSent
+                        ? "invitationSent"
+                        : result.data?.invited?.length
+                            ? "invited"
+                            : "success"
             );
+
 
             const removingSelf =
                 removing &&
@@ -274,39 +304,49 @@ export function ProjectMembers({
                                         </Badge>
                                     </TableCell>
 
-                                    <TableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    aria-label={t("actions")}
-                                                >
-                                                    <MoreHorizontal />
-                                                </Button>
-                                            </DropdownMenuTrigger>
 
-                                            <DropdownMenuContent align="end">
-                                                {!own && (
+                                    <TableCell className="text-right">
+                                        <div className="flex items-start justify-end gap-2">
+                                            {member.status === "PENDING" && (
+                                                <ResendInvitation
+                                                    projectId={projectId}
+                                                    email={member.email}
+                                                />
+                                            )}
+
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        aria-label={t("actions")}
+                                                    >
+                                                        <MoreHorizontal />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+
+                                                <DropdownMenuContent align="end">
+                                                    {!own && (
+                                                        <DropdownMenuItem
+                                                            onSelect={() =>
+                                                                openDialog("changeRole", member)
+                                                            }
+                                                        >
+                                                            {t("changeRole")}
+                                                        </DropdownMenuItem>
+                                                    )}
+
                                                     <DropdownMenuItem
+                                                        variant="destructive"
                                                         onSelect={() =>
-                                                            openDialog("changeRole", member)
+                                                            openDialog("remove", member)
                                                         }
                                                     >
-                                                        {t("changeRole")}
+                                                        {t("remove")}
                                                     </DropdownMenuItem>
-                                                )}
-
-                                                <DropdownMenuItem
-                                                    variant="destructive"
-                                                    onSelect={() =>
-                                                        openDialog("remove", member)
-                                                    }
-                                                >
-                                                    {t("remove")}
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             );

@@ -192,7 +192,12 @@
             "ADMIN": "Administrador",
             "EDITOR": "Editor",
             "VIEWER": "Lector"
-        }
+        },
+        "resendInvitation": "Reenviar invitación",
+        "invitationSent": "Invitación enviada.",
+        "invitationEmailFailed": "La invitación quedó registrada, pero no se pudo enviar el correo. Podés reenviarlo.",
+        "invitationResendUnavailable": "No se pudo reenviar la invitación. Esperá un minuto e intentá nuevamente.",
+        "resending": "Reenviando..."
     },
     "Connectors": {
         "title": "Conectores",

@@ -192,7 +192,12 @@
             "ADMIN": "Administrator",
             "EDITOR": "Editor",
             "VIEWER": "Viewer"
-        }
+        },
+        "resendInvitation": "Resend invitation",
+        "invitationSent": "Invitation sent.",
+        "invitationEmailFailed": "The invitation was saved, but the email could not be sent. You can resend it.",
+        "invitationResendUnavailable": "The invitation could not be resent. Wait one minute and try again.",
+        "resending": "Resending..."
     },
     "Connectors": {
         "title": "Connectors",
