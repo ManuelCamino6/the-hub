@@ -132,3 +132,27 @@ export const listInstancesSchema = z.object({
 
 export type ListInstancesInput =
   z.infer<typeof listInstancesSchema>;
+
+
+export type InstanceParameterDetail = {
+  key: string;
+  type: "TEXT" | "NUMBER" | "DATE" | "BOOLEAN";
+  required: boolean;
+  encrypted: boolean;
+  configured: boolean;
+  value?: string | null;
+};
+
+export type InstanceDetail = Instance & {
+  connector_status:
+    | "IN_DEVELOPMENT"
+    | "AVAILABLE"
+    | "DEPRECATED";
+
+  connector_deleted: boolean;
+  paused_reason: string | null;
+  paused_at: string | null;
+
+  parameters: InstanceParameterDetail[];
+  models_permissions: InstancePermission[];
+};

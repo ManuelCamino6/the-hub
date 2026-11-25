@@ -358,6 +358,25 @@
         "operationStatuses": {
             "ACTIVE": "Active",
             "PAUSED": "Paused"
-        }
+        },
+        "detail": "Integration details",
+        "edit": "Edit integration",
+        "editDescription": "Modify the parameters and permissions of this integration.",
+        "instanceId": "Integration ID",
+        "configured": "Configured",
+        "notConfigured": "Not configured",
+        "keepSecret": "Leave empty to keep the current secret.",
+        "clearSecret": "Remove stored value",
+        "replaceSecret": "Enter a new value",
+        "saved": "Changes saved.",
+        "saving": "Saving...",
+        "unauthorizedWarning": "This integration is no longer authorized to operate.",
+        "pausedWarning": "Operation is paused and requires manual reactivation.",
+        "deprecatedWarning": "The connector is deprecated. Existing installations may continue operating if all conditions are met.",
+        "deletedWarning": "The connector was deleted. This integration cannot operate.",
+        "incompleteStatusWarning": "Complete the required parameters to enable configuration.",
+        "grantedPermissions": "Granted permissions",
+        "noGrantedPermissions": "No permissions granted.",
+        "connectorStatus": "Connector status"
     }
 }

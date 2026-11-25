@@ -200,7 +200,12 @@ async function IntegrationsContent({
                                 {result.data.map((instance) => (
                                     <TableRow key={instance.id}>
                                         <TableCell className="font-medium">
-                                            {instance.name}
+                                            <Link
+                                                href={`${base}/${instance.id}`}
+                                                className="hover:underline"
+                                            >
+                                                {instance.name}
+                                            </Link>
                                         </TableCell>
 
                                         <TableCell>

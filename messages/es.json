@@ -358,6 +358,25 @@
         "operationStatuses": {
             "ACTIVE": "Activa",
             "PAUSED": "Suspendida"
-        }
+        },
+        "detail": "Detalle de integración",
+        "edit": "Editar integración",
+        "editDescription": "Modificá los parámetros y permisos de esta integración.",
+        "instanceId": "ID de integración",
+        "configured": "Configurado",
+        "notConfigured": "Sin configurar",
+        "keepSecret": "Dejar vacío para conservar el secreto actual.",
+        "clearSecret": "Eliminar valor almacenado",
+        "replaceSecret": "Ingresá un nuevo valor",
+        "saved": "Cambios guardados.",
+        "saving": "Guardando...",
+        "unauthorizedWarning": "Esta integración ya no tiene autorización para operar.",
+        "pausedWarning": "La operación está suspendida y requiere reactivación manual.",
+        "deprecatedWarning": "El conector está discontinuado. Las instalaciones existentes pueden seguir operando si cumplen las condiciones.",
+        "deletedWarning": "El conector fue eliminado. Esta integración no puede operar.",
+        "incompleteStatusWarning": "Completá los parámetros obligatorios para habilitar la configuración.",
+        "grantedPermissions": "Permisos concedidos",
+        "noGrantedPermissions": "No hay permisos concedidos.",
+        "connectorStatus": "Estado del conector"
     }
 }
