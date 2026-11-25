@@ -34,6 +34,12 @@ export async function listProjects(
 ) {
     const supabase = await createClient();
 
+    const { error: invitationError } = await supabase.rpc(
+        "claim_project_invitations"
+    );
+
+    if (invitationError) throw invitationError;
+
     const cursor = input.cursor
         ? projectCursorSchema.parse(
             JSON.parse(

@@ -49,6 +49,38 @@ export function apiDatabaseError(error: unknown) {
             : null;
 
     switch (code) {
+
+        case "P0001": {
+            const message =
+                typeof error === "object" &&
+                    error !== null &&
+                    "message" in error
+                    ? error.message
+                    : null;
+
+            if (message === "LAST_ADMIN") {
+                return apiError(
+                    "LAST_ADMIN",
+                    "The project must have at least one administrator.",
+                    409
+                );
+            }
+
+            if (message === "SELF_ROLE_CHANGE") {
+                return apiError(
+                    "SELF_ROLE_CHANGE",
+                    "You cannot change your own role.",
+                    409
+                );
+            }
+
+            return apiError(
+                "CONFLICT",
+                "The operation could not be completed.",
+                409
+            );
+        }
+
         case "P0002":
             return apiError(
                 "NOT_FOUND",
