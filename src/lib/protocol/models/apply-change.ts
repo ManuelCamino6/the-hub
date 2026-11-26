@@ -8,63 +8,63 @@ import { DomainError } from "@/lib/api/domain-error";
 import type { ModelMetadata } from "./metadata";
 
 import {
-  validateWriteFields,
-  type ChangePayload,
-  type ChangeFields,
+    validateWriteFields,
+    type ChangePayload,
+    type ChangeFields,
 } from "./write-validation";
 
 import {
-  validateForeignKeys,
+    validateForeignKeys,
 } from "./foreign-keys";
 
 import type {
-  WriteOperation,
+    WriteOperation,
 } from "./write-schemas";
 
 export type PendingChange = {
-  id: string;
-  sequence: number;
-  table_id: string;
-  table_name: string;
-  record_id: string;
-  type: WriteOperation;
-  payload: ChangePayload;
+    id: string;
+    sequence: number;
+    table_id: string;
+    table_name: string;
+    record_id: string;
+    type: WriteOperation;
+    payload: ChangePayload;
 };
 
 export type ApplyContext = {
-  projectId: string;
-  instanceId: string;
-  model: ModelMetadata;
+    projectId: string;
+    instanceId: string;
+    model: ModelMetadata;
 };
 
 
 async function applyCreate(
-  tx: TransactionSql,
-  context: ApplyContext,
-  change: PendingChange,
-  fields: ChangeFields
+    tx: TransactionSql,
+    context: ApplyContext,
+    change: PendingChange,
+    fields: ChangeFields
 ) {
-  const { model, projectId, instanceId } =
-    context;
+    const { model, projectId, instanceId } =
+        context;
 
-  const refId = change.payload.ref_id;
+    const refId = change.payload.ref_id;
 
-  if (!refId) {
-    throw new DomainError(
-      "INVALID_RECORD_REFERENCE",
-      422
-    );
-  }
+    if (!refId) {
+        throw new DomainError(
+            "INVALID_RECORD_REFERENCE",
+            422
+        );
+    }
 
-  const record = {
-    ...fields,
-    id: change.record_id,
-    project_id: projectId,
-  };
+    const record = {
+        ...fields,
+        id: change.record_id,
+        project_id: projectId,
+    };
 
-  const [created] = await tx<
-    Record<string, unknown>[]
-  >`
+    const [created] = await tx<
+        Record<string, unknown>[]
+    >`
     insert into data.${tx(model.name)}
 
     ${tx(record)}
@@ -72,14 +72,14 @@ async function applyCreate(
     returning *
   `;
 
-  await validateForeignKeys(
-    tx,
-    model,
-    projectId,
-    created as ChangeFields
-  );
+    await validateForeignKeys(
+        tx,
+        model,
+        projectId,
+        created as ChangeFields
+    );
 
-  await tx`
+    await tx`
     insert into data.${tx(`${model.name}_ref`)} (
       id,
       instance_id,
@@ -92,20 +92,39 @@ async function applyCreate(
       ${refId}
     )
   `;
+
+    const snapshot = Object.fromEntries(
+        model.columns.map((column) => [
+            column.name,
+            created[column.name],
+        ])
+    );
+
+    await tx`
+    update protocol.changes
+
+    set applied_payload = ${JSON.stringify({
+        ref_id: refId,
+        fields: snapshot,
+    })
+        }::jsonb
+
+    where id = ${change.id}
+    `;
 }
 
 
 async function applyUpdate(
-  tx: TransactionSql,
-  context: ApplyContext,
-  change: PendingChange,
-  fields: ChangeFields
+    tx: TransactionSql,
+    context: ApplyContext,
+    change: PendingChange,
+    fields: ChangeFields
 ) {
-  const { model, projectId } = context;
+    const { model, projectId } = context;
 
-  const [updated] = await tx<
-    Record<string, unknown>[]
-  >`
+    const [updated] = await tx<
+        Record<string, unknown>[]
+    >`
     update data.${tx(model.name)}
 
     set ${tx(fields)}
@@ -117,32 +136,32 @@ async function applyUpdate(
     returning *
   `;
 
-  if (!updated) {
-    throw new DomainError(
-      "RECORD_NOT_FOUND",
-      404
-    );
-  }
+    if (!updated) {
+        throw new DomainError(
+            "RECORD_NOT_FOUND",
+            404
+        );
+    }
 
-  await validateForeignKeys(
-    tx,
-    model,
-    projectId,
-    updated as ChangeFields
-  );
+    await validateForeignKeys(
+        tx,
+        model,
+        projectId,
+        updated as ChangeFields
+    );
 }
 
 
 async function applyDelete(
-  tx: TransactionSql,
-  context: ApplyContext,
-  change: PendingChange
+    tx: TransactionSql,
+    context: ApplyContext,
+    change: PendingChange
 ) {
-  const { model, projectId } = context;
+    const { model, projectId } = context;
 
-  const [deleted] = await tx<{
-    id: string;
-  }[]>`
+    const [deleted] = await tx<{
+        id: string;
+    }[]>`
     update data.${tx(model.name)}
 
     set deleted_at = clock_timestamp()
@@ -154,69 +173,69 @@ async function applyDelete(
     returning id
   `;
 
-  if (!deleted) {
-    throw new DomainError(
-      "RECORD_NOT_FOUND",
-      404
-    );
-  }
+    if (!deleted) {
+        throw new DomainError(
+            "RECORD_NOT_FOUND",
+            404
+        );
+    }
 }
 
 
 export async function applyChange(
-  tx: TransactionSql,
-  context: ApplyContext,
-  change: PendingChange
+    tx: TransactionSql,
+    context: ApplyContext,
+    change: PendingChange
 ) {
-  const { model } = context;
+    const { model } = context;
 
-  if (
-    model.id !== change.table_id ||
-    model.name !== change.table_name
-  ) {
-    throw new DomainError(
-      "MODEL_DEFINITION_CHANGED",
-      409
+    if (
+        model.id !== change.table_id ||
+        model.name !== change.table_name
+    ) {
+        throw new DomainError(
+            "MODEL_DEFINITION_CHANGED",
+            409
+        );
+    }
+
+    const fields = validateWriteFields(
+        model,
+        change.type,
+        change.payload.fields
     );
-  }
 
-  const fields = validateWriteFields(
-    model,
-    change.type,
-    change.payload.fields
-  );
+    switch (change.type) {
+        case "CREATE":
+            await applyCreate(
+                tx,
+                context,
+                change,
+                fields
+            );
+            break;
 
-  switch (change.type) {
-    case "CREATE":
-      await applyCreate(
-        tx,
-        context,
-        change,
-        fields
-      );
-      break;
+        case "UPDATE":
+            await applyUpdate(
+                tx,
+                context,
+                change,
+                fields
+            );
+            break;
 
-    case "UPDATE":
-      await applyUpdate(
-        tx,
-        context,
-        change,
-        fields
-      );
-      break;
+        case "DELETE":
+            await applyDelete(
+                tx,
+                context,
+                change
+            );
+            break;
 
-    case "DELETE":
-      await applyDelete(
-        tx,
-        context,
-        change
-      );
-      break;
-
-    default:
-      throw new DomainError(
-        "INVALID_CHANGE_TYPE",
-        422
-      );
-  }
+        default:
+            throw new DomainError(
+                "INVALID_CHANGE_TYPE",
+                422
+            );
+    }
 }
