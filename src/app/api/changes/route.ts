@@ -7,8 +7,8 @@ import {
 } from "@/lib/api/response";
 
 import {
-  decodeCursor,
-} from "@/lib/api/pagination";
+  decodeDeliveryCursor,
+} from "@/lib/protocol/propagations/pagination";
 
 import {
   getConnectorTokenHash,
@@ -54,7 +54,7 @@ export async function GET(
 
     if (parsed.data.cursor) {
       try {
-        decodeCursor(parsed.data.cursor);
+        decodeDeliveryCursor(parsed.data.cursor);
       } catch {
         return apiError(
           "INVALID_CURSOR",

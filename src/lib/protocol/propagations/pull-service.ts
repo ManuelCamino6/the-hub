@@ -5,13 +5,13 @@ import { getDatabase } from "@/lib/db";
 import { DomainError } from "@/lib/api/domain-error";
 
 import {
-  getPropagationReferences,
-} from "./reference-service";
+  decodeDeliveryCursor,
+  paginateDeliveries,
+} from "./pagination";
 
 import {
-  decodeCursor,
-  paginate,
-} from "@/lib/api/pagination";
+  getPropagationReferences,
+} from "./reference-service";
 
 import {
   authenticateConnector,
@@ -134,6 +134,39 @@ export async function getChange(
             destination: null,
           };
 
+    let globalRef: string | null = null;
+
+    if (change.table_id && change.record_id) {
+      const [origin] = await tx<{
+        ref_id: string | null;
+      }[]>`
+        select
+          ch.payload ->> 'ref_id' as ref_id
+
+        from protocol.changes ch
+
+        join protocol.batches b
+          on b.id = ch.batch_id
+
+        where ch.table_id = ${change.table_id}
+          and ch.record_id = ${change.record_id}
+
+          and b.project_id = ${change.project_id}
+          and b.type = 'TRANSACTION'
+          and b.status = 'COMMITTED'
+          and ch.type = 'CREATE'
+
+        order by
+          b.closed_at,
+          ch.sequence,
+          ch.id
+
+        limit 1
+      `;
+
+      globalRef = origin?.ref_id ?? null;
+    }
+
     return {
       id: change.id,
       instance_id: change.instance_id,
@@ -145,16 +178,7 @@ export async function getChange(
       record_id: change.record_id,
       type: change.type,
       payload: change.payload,
-
-      global_ref: change.origin_instance_id &&
-        refs.origin !== null
-          ? {
-              instance_id:
-                change.origin_instance_id,
-              ref_id: refs.origin,
-            }
-          : null,
-
+      global_ref: globalRef,
       refs,
       status: change.status,
     };
@@ -168,7 +192,7 @@ export async function listChanges(
   const sql = getDatabase();
 
   const cursor = input.cursor
-    ? decodeCursor(input.cursor)
+    ? decodeDeliveryCursor(input.cursor)
     : null;
 
   return sql.begin(async (tx) => {
@@ -180,7 +204,13 @@ export async function listChanges(
         tokenHash
       );
 
-    const rows = await tx<Propagation[]>`
+    const rows = await tx<
+      (
+        Propagation & {
+          delivery_order: string;
+        }
+      )[]
+    >`
       select
         p.id,
         p.instance_id,
@@ -190,6 +220,8 @@ export async function listChanges(
         ch.record_id,
         ch.type,
         p.status,
+
+        p.delivery_order::text as delivery_order,
 
         to_char(
           p.created_at at time zone 'UTC',
@@ -239,20 +271,20 @@ export async function listChanges(
         ${
           cursor
             ? tx`
-                and (p.created_at, p.id) >
-                (
-                  ${cursor.created_at}::timestamptz,
-                  ${cursor.id}::uuid
-                )
+                and p.delivery_order >
+                  ${cursor.delivery_order}::bigint
               `
             : tx``
         }
 
-      order by p.created_at asc, p.id asc
+      order by p.delivery_order asc
 
       limit ${input.limit + 1}
     `;
 
-    return paginate(rows, input.limit);
+    return paginateDeliveries(
+      rows,
+      input.limit
+    );
   });
 }
