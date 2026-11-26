@@ -56,3 +56,45 @@ export function isCheckoutEnabled() {
     "true"
   );
 }
+
+export function getBillingReturnUrl(
+  projectId: string
+) {
+  const baseUrl =
+    process.env.BILLING_RETURN_BASE_URL;
+
+  if (!baseUrl) {
+    throw new DomainError(
+      "BILLING_NOT_CONFIGURED",
+      503
+    );
+  }
+
+  let url: URL;
+
+  try {
+    url = new URL(baseUrl);
+
+  } catch {
+    throw new DomainError(
+      "BILLING_NOT_CONFIGURED",
+      503
+    );
+  }
+
+  if (
+    url.protocol !== "https:" ||
+    url.username ||
+    url.password
+  ) {
+    throw new DomainError(
+      "BILLING_NOT_CONFIGURED",
+      503
+    );
+  }
+
+  return new URL(
+    `/p/${projectId}/billing/return`,
+    url.origin
+  ).toString();
+}

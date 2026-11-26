@@ -466,5 +466,22 @@
         "yes": "Yes",
         "no": "No",
         "none": "None"
+    },
+    "Billing": {
+        "title": "Billing",
+        "returnTitle": "Subscription status",
+        "returnDescription": "Payment confirmation may take a few minutes.",
+        "returnPending": "Returning from Mercado Pago does not confirm that the payment was completed.",
+        "status": "Status",
+        "refresh": "Refresh status",
+        "back": "Back to project",
+        "statuses": {
+            "NONE": "No subscription",
+            "PENDING": "Pending",
+            "ACTIVE": "Active",
+            "PAST_DUE": "Past due",
+            "PAUSED": "Paused",
+            "CANCELLED": "Cancelled"
+        }
     }
 }

@@ -466,5 +466,22 @@
         "yes": "Sí",
         "no": "No",
         "none": "Ninguno"
+    },
+    "Billing": {
+        "title": "Facturación",
+        "returnTitle": "Estado de la suscripción",
+        "returnDescription": "La confirmación del pago puede demorar unos minutos.",
+        "returnPending": "El regreso desde Mercado Pago no confirma que el pago se haya realizado.",
+        "status": "Estado",
+        "refresh": "Actualizar estado",
+        "back": "Volver al proyecto",
+        "statuses": {
+            "NONE": "Sin suscripción",
+            "PENDING": "Pendiente",
+            "ACTIVE": "Activa",
+            "PAST_DUE": "Pago vencido",
+            "PAUSED": "Pausada",
+            "CANCELLED": "Cancelada"
+        }
     }
 }
