@@ -177,7 +177,11 @@ export async function createCheckout(
                 clock_timestamp(),
 
               updated_at =
-                clock_timestamp()
+                clock_timestamp(),
+
+                frequency = ${plan.frequency},
+
+                frequency_type = ${plan.frequency_type}
 
             where id = ${existing.id}
           `;
@@ -200,7 +204,9 @@ export async function createCheckout(
               currency,
               amount_minor,
               checkout_state,
-              checkout_requested_at
+              checkout_requested_at,
+              frequency,
+              frequency_type
             )
 
             values (
@@ -211,7 +217,9 @@ export async function createCheckout(
               ${plan.currency},
               ${plan.amount_minor},
               'CREATING',
-              clock_timestamp()
+              clock_timestamp(),
+              ${plan.frequency},
+              ${plan.frequency_type}
             )
 
             returning id
@@ -281,7 +289,11 @@ export async function createCheckout(
           checkout_state = 'READY',
 
           updated_at =
-            clock_timestamp()
+            clock_timestamp(),
+            
+            frequency = ${plan.frequency},
+
+            frequency_type = ${plan.frequency_type}
 
         where id = ${reservation.id}
 
