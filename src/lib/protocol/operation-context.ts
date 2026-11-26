@@ -6,35 +6,39 @@ import type { TransactionSql } from "postgres";
 import { DomainError } from "@/lib/api/domain-error";
 
 import {
-  authenticateConnector,
+    requireActiveSubscription,
+} from "@/lib/billing/access";
+
+import {
+    authenticateConnector,
 } from "@/lib/connectors/auth";
 
 import type {
-  InstanceStatus,
-  InstanceOperationStatus,
+    InstanceStatus,
+    InstanceOperationStatus,
 } from "@/lib/instances/schemas";
 
 import type {
-  ConnectorStatus,
+    ConnectorStatus,
 } from "@/lib/connectors/schemas";
 
 export type OperationInstance = {
-  id: string;
-  project_id: string;
-  connector_id: string;
-  status: InstanceStatus;
-  operation_status: InstanceOperationStatus;
+    id: string;
+    project_id: string;
+    connector_id: string;
+    status: InstanceStatus;
+    operation_status: InstanceOperationStatus;
 };
 
 export async function lockOperationInstance(
-  tx: TransactionSql,
-  tokenHash: string,
-  instanceId: string
+    tx: TransactionSql,
+    tokenHash: string,
+    instanceId: string
 ) {
-  const [reference] = await tx<{
-    project_id: string;
-    development_id: string;
-  }[]>`
+    const [reference] = await tx<{
+        project_id: string;
+        development_id: string;
+    }[]>`
     select
       i.project_id,
       c.project_id as development_id
@@ -49,19 +53,19 @@ export async function lockOperationInstance(
       and c.deleted_at is null
   `;
 
-  if (!reference) {
-    await authenticateConnector(
-      tx,
-      tokenHash
-    );
+    if (!reference) {
+        await authenticateConnector(
+            tx,
+            tokenHash
+        );
 
-    throw new DomainError(
-      "INSTANCE_NOT_FOUND",
-      404
-    );
-  }
+        throw new DomainError(
+            "INSTANCE_NOT_FOUND",
+            404
+        );
+    }
 
-  await tx`
+    await tx`
     select id
     from platform.projects
 
@@ -75,15 +79,15 @@ export async function lockOperationInstance(
     for update
   `;
 
-  const connector =
-    await authenticateConnector(
-      tx,
-      tokenHash
-    );
+    const connector =
+        await authenticateConnector(
+            tx,
+            tokenHash
+        );
 
-  const [instance] = await tx<
-    OperationInstance[]
-  >`
+    const [instance] = await tx<
+        OperationInstance[]
+    >`
     select
       i.id,
       i.project_id,
@@ -105,34 +109,34 @@ export async function lockOperationInstance(
     for update of i
   `;
 
-  if (!instance) {
-    throw new DomainError(
-      "INSTANCE_NOT_FOUND",
-      404
-    );
-  }
+    if (!instance) {
+        throw new DomainError(
+            "INSTANCE_NOT_FOUND",
+            404
+        );
+    }
 
-  return {
-    connector,
-    instance,
-  };
+    return {
+        connector,
+        instance,
+    };
 }
 
 export async function requireOperationalInstance(
-  tx: TransactionSql,
-  instance: OperationInstance,
-  connectorStatus: ConnectorStatus
+    tx: TransactionSql,
+    instance: OperationInstance,
+    connectorStatus: ConnectorStatus
 ) {
-  if (connectorStatus === "IN_DEVELOPMENT") {
-    throw new DomainError(
-      "CONNECTOR_NOT_OPERATIONAL",
-      409
-    );
-  }
+    if (connectorStatus === "IN_DEVELOPMENT") {
+        throw new DomainError(
+            "CONNECTOR_NOT_OPERATIONAL",
+            409
+        );
+    }
 
-  const [authorization] = await tx<{
-    allowed: boolean;
-  }[]>`
+    const [authorization] = await tx<{
+        allowed: boolean;
+    }[]>`
     select exists (
       select 1
       from platform.connectors c
@@ -154,29 +158,34 @@ export async function requireOperationalInstance(
     ) as allowed
   `;
 
-  if (
-    !authorization.allowed ||
-    instance.status === "UNAUTHORIZED"
-  ) {
-    throw new DomainError(
-      "INSTANCE_UNAUTHORIZED",
-      403
-    );
-  }
+    if (
+        !authorization.allowed ||
+        instance.status === "UNAUTHORIZED"
+    ) {
+        throw new DomainError(
+            "INSTANCE_UNAUTHORIZED",
+            403
+        );
+    }
 
-  if (instance.status !== "OK") {
-    throw new DomainError(
-      "INSTANCE_INCOMPLETE",
-      409
-    );
-  }
+    if (instance.status !== "OK") {
+        throw new DomainError(
+            "INSTANCE_INCOMPLETE",
+            409
+        );
+    }
 
-  if (
-    instance.operation_status !== "ACTIVE"
-  ) {
-    throw new DomainError(
-      "INSTANCE_PAUSED",
-      409
+    if (
+        instance.operation_status !== "ACTIVE"
+    ) {
+        throw new DomainError(
+            "INSTANCE_PAUSED",
+            409
+        );
+    }
+
+    await requireActiveSubscription(
+        tx,
+        instance.project_id
     );
-  }
 }

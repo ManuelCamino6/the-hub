@@ -16,6 +16,10 @@ import {
     Users,
     Compass,
     Plug,
+    CreditCard,
+    Activity,
+    Newspaper,
+    BookOpen,
 } from "lucide-react";
 
 import {
@@ -145,12 +149,72 @@ export function ProjectSidebar({
                                 <SidebarMenuButton
                                     asChild
                                     isActive={
+                                        pathname.startsWith(`${base}/sync`)
+                                    }
+                                >
+                                    <Link href={`${base}/sync`}>
+                                        <Activity />
+                                        <span>{t("sync")}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        )}
+
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={
+                                    pathname.startsWith(`${base}/news`)
+                                }
+                            >
+                                <Link href={`${base}/news`}>
+                                    <Newspaper />
+                                    <span>{t("news")}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={
+                                    pathname.startsWith(`${base}/docs`)
+                                }
+                            >
+                                <Link href={`/docs`}>
+                                    <BookOpen />
+                                    <span>{t("documentation")}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+
+                        {project.type === "BUSINESS" && (
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={
                                         pathname.startsWith(`${base}/integrations`)
                                     }
                                 >
                                     <Link href={`${base}/integrations`}>
                                         <Plug />
                                         <span>{t("integrations")}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        )}
+
+                        {project.type === "BUSINESS" && (
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={
+                                        pathname.startsWith(`${base}/billing`)
+                                    }
+                                >
+                                    <Link href={`${base}/billing`}>
+                                        <CreditCard />
+                                        <span>{t("billing")}</span>
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>

@@ -33,8 +33,6 @@ import {
     storeWebhookEvent,
 } from "@/lib/billing/webhooks/service";
 
-export const runtime = "nodejs";
-
 export async function POST(
     request: NextRequest
 ) {

@@ -5,92 +5,92 @@ import { z } from "zod";
 import { getDatabase } from "@/lib/db";
 
 import {
-  DomainError,
+    DomainError,
 } from "@/lib/api/domain-error";
 
 import {
-  requireBillingProject,
+    requireBillingProject,
 } from "./authorization";
 
 import {
-  getBillingPlan,
-  getBillingReturnUrl,
-  isCheckoutEnabled,
+    getBillingPlan,
+    getBillingReturnUrl,
+    isCheckoutEnabled,
 } from "./config";
 
 import {
-  createRemoteSubscription,
-  validateCheckoutUrl,
+    createRemoteSubscription,
+    validateCheckoutUrl,
 } from "./mercadopago/subscriptions";
 
 type CheckoutSubscription = {
-  id: string;
+    id: string;
 
-  status: string;
+    status: string;
 
-  checkout_state:
+    checkout_state:
     | "IDLE"
     | "CREATING"
     | "READY"
     | "RECONCILE";
 
-  checkout_url: string | null;
+    checkout_url: string | null;
 
-  provider_subscription_id:
+    provider_subscription_id:
     string | null;
 };
 
 type CheckoutReservation =
-  | {
-      kind: "existing";
-      redirect_url: string;
+    | {
+        kind: "existing";
+        redirect_url: string;
     }
-  | {
-      kind: "reserved";
-      id: string;
+    | {
+        kind: "reserved";
+        id: string;
     };
 
 export async function createCheckout(
-  userId: string,
-  projectId: string,
-  payerEmail: string
+    userId: string,
+    projectId: string,
+    payerEmail: string
 ) {
-  if (!isCheckoutEnabled()) {
-    throw new DomainError(
-      "CHECKOUT_DISABLED",
-      503
-    );
-  }
+    if (!isCheckoutEnabled()) {
+        throw new DomainError(
+            "CHECKOUT_DISABLED",
+            503
+        );
+    }
 
-  if (
-    !process.env.MERCADOPAGO_ACCESS_TOKEN
-  ) {
-    throw new DomainError(
-      "PAYMENT_PROVIDER_NOT_CONFIGURED",
-      503
-    );
-  }
+    if (
+        !process.env.MERCADOPAGO_ACCESS_TOKEN
+    ) {
+        throw new DomainError(
+            "PAYMENT_PROVIDER_NOT_CONFIGURED",
+            503
+        );
+    }
 
-  if (!z.email().safeParse(
-    payerEmail
-  ).success) {
-    throw new DomainError(
-      "INVALID_PAYER_EMAIL",
-      422
-    );
-  }
+    if (!z.email().safeParse(
+        payerEmail
+    ).success) {
+        throw new DomainError(
+            "INVALID_PAYER_EMAIL",
+            422
+        );
+    }
 
-  const plan = getBillingPlan();
+    const plan = getBillingPlan();
 
-  const backUrl =
-    getBillingReturnUrl(projectId);
+    const backUrl =
+        getBillingReturnUrl(projectId);
 
-  const sql = getDatabase();
+    const sql = getDatabase();
 
-  const reservation =
-    await sql.begin(
-      async (tx): Promise<CheckoutReservation> => {
-        await tx`
+    const reservation =
+        await sql.begin(
+            async (tx): Promise<CheckoutReservation> => {
+                await tx`
           select id
 
           from platform.projects
@@ -100,17 +100,17 @@ export async function createCheckout(
           for update
         `;
 
-        await requireBillingProject(
-          tx,
-          userId,
-          projectId,
-          {
-            adminOnly: true,
-          }
-        );
+                await requireBillingProject(
+                    tx,
+                    userId,
+                    projectId,
+                    {
+                        adminOnly: true,
+                    }
+                );
 
-        const [existing] =
-          await tx<CheckoutSubscription[]>`
+                const [existing] =
+                    await tx<CheckoutSubscription[]>`
             select
               id,
               status,
@@ -125,143 +125,160 @@ export async function createCheckout(
             for update
           `;
 
-        if (existing) {
-          if (
-            existing.status !== "PENDING"
-          ) {
-            throw new DomainError(
-              "SUBSCRIPTION_ALREADY_EXISTS",
-              409
-            );
-          }
+                if (existing) {
+                    if (
+                        existing.status !== "PENDING"
+                    ) {
+                        throw new DomainError(
+                            "SUBSCRIPTION_ALREADY_EXISTS",
+                            409
+                        );
+                    }
 
-          if (
-            existing.checkout_state ===
-              "READY" &&
+                    if (
+                        existing.checkout_state ===
+                        "READY" &&
 
-            existing.checkout_url
-          ) {
-            return {
-              kind: "existing",
+                        existing.checkout_url
+                    ) {
+                        return {
+                            kind: "existing",
 
-              redirect_url:
-                validateCheckoutUrl(
-                  existing.checkout_url
-                ),
-            };
-          }
+                            redirect_url:
+                                validateCheckoutUrl(
+                                    existing.checkout_url
+                                ),
+                        };
+                    }
 
-          if (
-            existing.checkout_state !==
-              "IDLE" ||
+                    if (
+                        existing.checkout_state !==
+                        "IDLE" ||
 
-            existing.provider_subscription_id
-          ) {
-            throw new DomainError(
-              "CHECKOUT_RECONCILIATION_REQUIRED",
-              409
-            );
-          }
+                        existing.provider_subscription_id
+                    ) {
+                        throw new DomainError(
+                            "CHECKOUT_RECONCILIATION_REQUIRED",
+                            409
+                        );
+                    }
 
-          await tx`
-            update billing.subscriptions
+                    await tx`
+                        update billing.subscriptions
 
-            set
-              plan_code = ${plan.code},
-              currency = ${plan.currency},
-              amount_minor = ${plan.amount_minor},
+                        set
+                        plan_code = ${plan.code},
+                        currency = ${plan.currency},
+                        amount_minor = ${plan.amount_minor},
 
-              checkout_state = 'CREATING',
+                        checkout_state = 'CREATING',
 
-              checkout_requested_at =
-                clock_timestamp(),
+                        checkout_requested_at =
+                            clock_timestamp(),
 
-              updated_at =
-                clock_timestamp(),
+                        updated_at =
+                            clock_timestamp(),
 
-                frequency = ${plan.frequency},
+                            frequency = ${plan.frequency},
 
-                frequency_type = ${plan.frequency_type}
+                            frequency_type = ${plan.frequency_type}
 
-            where id = ${existing.id}
-          `;
+                        where id = ${existing.id}
+                    `;
 
-          return {
-            kind: "reserved",
-            id: existing.id,
-          };
-        }
+                    await tx`
+                        update billing.subscriptions
 
-        const [created] =
-          await tx<{
-            id: string;
-          }[]>`
-            insert into billing.subscriptions (
-              project_id,
-              provider,
-              status,
-              plan_code,
-              currency,
-              amount_minor,
-              checkout_state,
-              checkout_requested_at,
-              frequency,
-              frequency_type
-            )
+                        set
+                            plan_code = ${plan.code},
+                            currency = ${plan.currency},
+                            amount_minor = ${plan.amount_minor},
+                            frequency = ${plan.frequency},
+                            frequency_type = ${plan.frequency_type},
+                            checkout_payer_email = ${payerEmail},
+                            checkout_state = 'CREATING',
+                            checkout_requested_at = clock_timestamp(),
+                            updated_at = clock_timestamp()
 
-            values (
-              ${projectId},
-              ${plan.provider},
-              'PENDING',
-              ${plan.code},
-              ${plan.currency},
-              ${plan.amount_minor},
-              'CREATING',
-              clock_timestamp(),
-              ${plan.frequency},
-              ${plan.frequency_type}
-            )
+                        where id = ${existing.id}
+                        `;
 
-            returning id
-          `;
+                    return {
+                        kind: "reserved",
+                        id: existing.id,
+                    };
+                }
 
+                const [created] =
+                    await tx<{ id: string }[]>`
+                        insert into billing.subscriptions (
+                        project_id,
+                        provider,
+                        status,
+                        plan_code,
+                        currency,
+                        amount_minor,
+                        frequency,
+                        frequency_type,
+                        checkout_payer_email,
+                        checkout_state,
+                        checkout_requested_at
+                        )
+
+                        values (
+                        ${projectId},
+                        ${plan.provider},
+                        'PENDING',
+                        ${plan.code},
+                        ${plan.currency},
+                        ${plan.amount_minor},
+                        ${plan.frequency},
+                        ${plan.frequency_type},
+                        ${payerEmail},
+                        'CREATING',
+                        clock_timestamp()
+                        )
+
+                        returning id
+                    `;
+
+                return {
+                    kind: "reserved",
+                    id: created.id,
+                };
+            }
+        );
+
+    if (reservation.kind === "existing") {
         return {
-          kind: "reserved",
-          id: created.id,
+            redirect_url:
+                reservation.redirect_url,
         };
-      }
-    );
+    }
 
-  if (reservation.kind === "existing") {
-    return {
-      redirect_url:
-        reservation.redirect_url,
-    };
-  }
+    try {
+        const remote =
+            await createRemoteSubscription({
+                reference: reservation.id,
+                payerEmail,
 
-  try {
-    const remote =
-      await createRemoteSubscription({
-        reference: reservation.id,
-        payerEmail,
+                amountMinor:
+                    plan.amount_minor,
 
-        amountMinor:
-          plan.amount_minor,
+                currency:
+                    plan.currency,
 
-        currency:
-          plan.currency,
+                frequency:
+                    plan.frequency,
 
-        frequency:
-          plan.frequency,
+                frequencyType:
+                    plan.frequency_type,
 
-        frequencyType:
-          plan.frequency_type,
+                backUrl,
+            });
 
-        backUrl,
-      });
-
-    await sql.begin(async (tx) => {
-      await tx`
+        await sql.begin(async (tx) => {
+            await tx`
         select id
 
         from platform.projects
@@ -271,69 +288,54 @@ export async function createCheckout(
         for update
       `;
 
-      const [saved] = await tx<{
-        id: string;
-      }[]>`
-        update billing.subscriptions
+            const [saved] = await tx<{ id: string }[]>`
+                update billing.subscriptions
 
-        set
-          provider_subscription_id =
-            ${remote.id},
+                set
+                    provider_subscription_id = ${remote.id},
+                    provider_status = ${remote.status},
+                    checkout_url = ${remote.init_point},
+                    checkout_state = 'READY',
+                    updated_at = clock_timestamp()
 
-          provider_status =
-            ${remote.status},
+                where id = ${reservation.id}
 
-          checkout_url =
-            ${remote.init_point},
+                    and checkout_state = 'CREATING'
 
-          checkout_state = 'READY',
+                    and status = 'PENDING'
 
-          updated_at =
-            clock_timestamp(),
-            
-            frequency = ${plan.frequency},
+                    and (
+                    provider_subscription_id is null
+                    or provider_subscription_id = ${remote.id}
+                    )
 
-            frequency_type = ${plan.frequency_type}
+                returning id
+                `;
 
-        where id = ${reservation.id}
+            if (!saved) {
+                throw new DomainError(
+                    "CHECKOUT_STATE_CONFLICT",
+                    409
+                );
+            }
 
-          and checkout_state = 'CREATING'
+            await requireBillingProject(
+                tx,
+                userId,
+                projectId,
+                {
+                    adminOnly: true,
+                }
+            );
+        });
 
-          and status = 'PENDING'
+        return {
+            redirect_url: remote.init_point,
+        };
 
-          and (
-            provider_subscription_id is null
-            or provider_subscription_id =
-              ${remote.id}
-          )
-
-        returning id
-      `;
-
-      if (!saved) {
-        throw new DomainError(
-          "CHECKOUT_STATE_CONFLICT",
-          409
-        );
-      }
-
-      await requireBillingProject(
-        tx,
-        userId,
-        projectId,
-        {
-          adminOnly: true,
-        }
-      );
-    });
-
-    return {
-      redirect_url: remote.init_point,
-    };
-
-  } catch (error) {
-    try {
-      await sql`
+    } catch (error) {
+        try {
+            await sql`
         update billing.subscriptions
 
         set
@@ -347,16 +349,16 @@ export async function createCheckout(
           and checkout_state = 'CREATING'
       `;
 
-    } catch {
-      console.error(
-        "Checkout reconciliation required",
-        {
-          subscriptionId:
-            reservation.id,
+        } catch {
+            console.error(
+                "Checkout reconciliation required",
+                {
+                    subscriptionId:
+                        reservation.id,
+                }
+            );
         }
-      );
-    }
 
-    throw error;
-  }
+        throw error;
+    }
 }

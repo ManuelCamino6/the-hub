@@ -8,6 +8,8 @@ import {
     requireInstance,
 } from "@/lib/instances/context";
 
+import { Activity } from "lucide-react";
+
 import {
     InstanceActions,
 } from "@/components/instances/instance-actions";
@@ -60,6 +62,7 @@ export default function InstancePage(props: Props) {
 }
 
 async function InstanceContent({ params }: Props) {
+    const syncTranslations = await getTranslations("Sync");
     const { id, instanceId } = await params;
 
     const { instance, canWrite } =
@@ -108,15 +111,26 @@ async function InstanceContent({ params }: Props) {
                         />
                     </div>
                 </div>
+                <div>
+                    {canWrite && !instance.connector_deleted && (
+                        <Button asChild>
+                            <Link href={`${base}/edit`}>
+                                <Pencil />
+                                {t("edit")}
+                            </Link>
+                        </Button>
+                    )}
 
-                {canWrite && !instance.connector_deleted && (
-                    <Button asChild>
-                        <Link href={`${base}/edit`}>
-                            <Pencil />
-                            {t("edit")}
+                    <Button variant="outline" asChild>
+                        <Link
+                            href={`/p/${id}/integrations/${instanceId}/sync`}
+                        >
+                            <Activity />
+
+                            {syncTranslations("title")}
                         </Link>
                     </Button>
-                )}
+                </div>
             </div>
 
             <InstanceAlerts instance={instance} />
@@ -161,6 +175,7 @@ async function InstanceContent({ params }: Props) {
                 <CardHeader>
                     <CardTitle>{t("detail")}</CardTitle>
                 </CardHeader>
+
 
                 <CardContent className="space-y-4">
                     <div className="space-y-2">

@@ -44,7 +44,16 @@ export async function getSubscription(
     const [subscription] =
       await tx<SubscriptionRow[]>`
         select
-          s.status,
+        case
+            when s.status = 'ACTIVE'
+
+                and period_end <= now()
+
+            then 'PAST_DUE'
+
+            else s.status
+
+        end as status,
           s.provider,
           s.plan_code,
           s.currency,
@@ -58,7 +67,16 @@ export async function getSubscription(
 
           billing.has_active_subscription(
             s.project_id
-          ) as operational
+          ) as operational,
+            frequency,
+
+            frequency_type,
+
+            checkout_state,
+
+            (
+            cancellation_requested_at is not null
+            ) as cancellation_pending
 
         from billing.subscriptions s
 

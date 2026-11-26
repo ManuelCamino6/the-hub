@@ -38,6 +38,10 @@ export function propagationAccess(
           'AVAILABLE',
           'DEPRECATED'
         )
+    
+        and billing.has_active_subscription(
+          i.project_id
+        )
 
         and exists (
           select 1

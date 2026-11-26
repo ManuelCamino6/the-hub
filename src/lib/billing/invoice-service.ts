@@ -99,7 +99,8 @@ export async function listInvoices(
 
 export async function getInvoice(
   userId: string,
-  invoiceId: string
+  invoiceId: string,
+  expectedProjectId?: string
 ): Promise<InvoiceDetail> {
   const sql = getDatabase();
 
@@ -133,6 +134,12 @@ export async function getInvoice(
           and (
             p.deleted_at is null
             or m.role = 'ADMIN'
+          )
+          and (
+            ${expectedProjectId ?? null}::uuid is null
+
+            or f.project_id =
+              ${expectedProjectId ?? null}::uuid
           )
       `;
 

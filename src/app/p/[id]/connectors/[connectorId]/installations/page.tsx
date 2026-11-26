@@ -1,7 +1,7 @@
-
 import Link from "next/link";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { Activity } from "lucide-react";
 
 import {
   getTranslations,
@@ -100,6 +100,7 @@ async function InstallationsContent({
   const t = await getTranslations("Connectors");
   const instances = await getTranslations("Instances");
   const projects = await getTranslations("Projects");
+  const sync = await getTranslations("Sync");
 
   const format = await getFormatter();
 
@@ -161,6 +162,10 @@ async function InstallationsContent({
                 <TableHead>
                   {t("lastConfirmation")}
                 </TableHead>
+
+                <TableHead className="text-right">
+                  {sync("title")}
+                </TableHead>
               </TableRow>
             </TableHeader>
 
@@ -207,6 +212,21 @@ async function InstallationsContent({
                           }
                         )
                       : t("noConfirmations")}
+                  </TableCell>
+
+                  <TableCell className="text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                    >
+                      <Link
+                        href={`${base}/${installation.instance_id}/sync`}
+                      >
+                        <Activity />
+                        {sync("viewDetails")}
+                      </Link>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

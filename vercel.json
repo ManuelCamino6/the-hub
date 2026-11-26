@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/internal/billing/reconcile",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/internal/billing/reconcile?task=subscriptions",
+      "schedule": "0 4 * * *"
+    }
+  ]
+}

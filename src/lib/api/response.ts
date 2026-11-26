@@ -58,6 +58,14 @@ export function apiDatabaseError(error: unknown) {
                     ? error.message
                     : null;
 
+            if (message === "SUBSCRIPTION_MUST_BE_CANCELLED") {
+                return apiError(
+                    "SUBSCRIPTION_MUST_BE_CANCELLED",
+                    "Cancel the subscription before deleting the project.",
+                    409
+                );
+            }
+
             if (message === "LAST_ADMIN") {
                 return apiError(
                     "LAST_ADMIN",

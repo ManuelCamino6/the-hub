@@ -12,6 +12,8 @@ import {
   mercadoPagoSubscriptionSchema,
 } from "./schemas";
 
+import { z } from "zod";
+
 type CreateSubscriptionInput = {
   reference: string;
   payerEmail: string;
@@ -193,4 +195,52 @@ export async function cancelRemoteSubscription(
     );
 
   return parseSubscription(response);
+}
+
+const subscriptionSearchSchema = z.object({
+  paging: z.object({
+    offset: z.number().int().nonnegative(),
+    limit: z.number().int().positive(),
+    total: z.number().int().nonnegative(),
+  }),
+
+  results: z.array(
+    z.object({
+      id: z.string().min(1),
+
+      external_reference: z.union([
+        z.string(),
+        z.number(),
+      ]).nullable().optional(),
+    })
+  ),
+});
+
+export async function searchRemoteSubscriptions(
+  payerEmail: string,
+  offset = 0
+) {
+  const params = new URLSearchParams({
+    payer_email: payerEmail,
+    limit: "20",
+    offset: String(offset),
+  });
+
+  const response = await mercadoPagoRequest(
+    `/preapproval/search?${params}`
+  );
+
+  const parsed =
+    subscriptionSearchSchema.safeParse(
+      response
+    );
+
+  if (!parsed.success) {
+    throw new DomainError(
+      "INVALID_PAYMENT_PROVIDER_RESPONSE",
+      502
+    );
+  }
+
+  return parsed.data;
 }

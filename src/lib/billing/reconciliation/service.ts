@@ -5,42 +5,51 @@ import { z } from "zod";
 import { getDatabase } from "@/lib/db";
 
 import {
-  getRemoteSubscription,
-  validateCheckoutUrl,
+    getRemoteSubscription,
+    validateCheckoutUrl,
 } from "../mercadopago/subscriptions";
 
 import {
-  getAuthorizedPayment,
-  getProviderPayment,
+    getAuthorizedPayment,
+    getProviderPayment,
 } from "../mercadopago/payments";
 
 import {
-  calculateBillingPeriod,
+    calculateBillingPeriod,
 } from "../periods";
 
 import {
-  validateRemoteSubscription,
-  validateRecurringPayment,
-  isAccreditedPayment,
+    validateRemoteSubscription,
+    validateRecurringPayment,
+    isAccreditedPayment,
 } from "./validation";
 
 import type {
-  LocalSubscription,
+    LocalSubscription,
 } from "./validation";
 
 import type {
-  TransactionSql,
+    TransactionSql,
 } from "postgres";
 
 import {
-  DomainError,
+    DomainError,
 } from "@/lib/api/domain-error";
 
+type ReconciliationResult =
+  | {
+      ignored: true;
+    }
+  | {
+      ignored: false;
+      subscription_id: string;
+    };
+
 async function refreshSubscriptionStatus(
-  tx: TransactionSql,
-  subscriptionId: string
+    tx: TransactionSql,
+    subscriptionId: string
 ) {
-  await tx`
+    await tx`
     update billing.subscriptions s
 
     set
@@ -114,37 +123,46 @@ async function refreshSubscriptionStatus(
 
     where s.id = ${subscriptionId}
   `;
+    await tx`
+  update billing.subscriptions
+
+  set cancellation_requested_at = null
+
+  where id = ${subscriptionId}
+
+    and status = 'CANCELLED'
+`;
 }
 
 export async function reconcileSubscription(
   remoteId: string,
   authorizedPaymentId?: string
-) {
-  const remote =
-    await getRemoteSubscription(remoteId);
+): Promise<ReconciliationResult> {
+    const remote =
+        await getRemoteSubscription(remoteId);
 
-  if (remote.id !== remoteId) {
-    throw new DomainError(
-      "SUBSCRIPTION_DATA_MISMATCH",
-      409
+    if (remote.id !== remoteId) {
+        throw new DomainError(
+            "SUBSCRIPTION_DATA_MISMATCH",
+            409
+        );
+    }
+
+    const localId = z.uuid().safeParse(
+        remote.external_reference
     );
-  }
 
-  const localId = z.uuid().safeParse(
-    remote.external_reference
-  );
+    if (!localId.success) {
+        return {
+            ignored: true,
+        };
+    }
 
-  if (!localId.success) {
-    return {
-      ignored: true,
-    };
-  }
+    const sql = getDatabase();
 
-  const sql = getDatabase();
-
-  const [reference] = await sql<{
-    project_id: string;
-  }[]>`
+    const [reference] = await sql<{
+        project_id: string;
+    }[]>`
     select project_id
 
     from billing.subscriptions
@@ -152,36 +170,36 @@ export async function reconcileSubscription(
     where id = ${localId.data}
   `;
 
-  if (!reference) {
-    return {
-      ignored: true,
-    };
-  }
+    if (!reference) {
+        return {
+            ignored: true,
+        };
+    }
 
-  const authorized = authorizedPaymentId
-    ? await getAuthorizedPayment(
-        authorizedPaymentId
-      )
-    : null;
+    const authorized = authorizedPaymentId
+        ? await getAuthorizedPayment(
+            authorizedPaymentId
+        )
+        : null;
 
-  if (
-    authorized &&
-    authorized.id !== authorizedPaymentId
-  ) {
-    throw new DomainError(
-      "PAYMENT_DATA_MISMATCH",
-      409
-    );
-  }
+    if (
+        authorized &&
+        authorized.id !== authorizedPaymentId
+    ) {
+        throw new DomainError(
+            "PAYMENT_DATA_MISMATCH",
+            409
+        );
+    }
 
-  const payment = authorized?.payment?.id
-    ? await getProviderPayment(
-        authorized.payment.id
-      )
-    : null;
+    const payment = authorized?.payment?.id
+        ? await getProviderPayment(
+            authorized.payment.id
+        )
+        : null;
 
-  return sql.begin(async (tx) => {
-    await tx`
+    return sql.begin(async (tx): Promise<ReconciliationResult> => {
+        await tx`
       select id
 
       from platform.projects
@@ -191,8 +209,8 @@ export async function reconcileSubscription(
       for update
     `;
 
-    const [local] =
-      await tx<LocalSubscription[]>`
+        const [local] =
+            await tx<LocalSubscription[]>`
         select
           id,
           project_id,
@@ -209,25 +227,25 @@ export async function reconcileSubscription(
         for update
       `;
 
-    if (!local) {
-      throw new DomainError(
-        "SUBSCRIPTION_NOT_FOUND",
-        404
-      );
-    }
+        if (!local) {
+            throw new DomainError(
+                "SUBSCRIPTION_NOT_FOUND",
+                404
+            );
+        }
 
-    validateRemoteSubscription(
-      local,
-      remote
-    );
+        validateRemoteSubscription(
+            local,
+            remote
+        );
 
-    const checkoutUrl = remote.init_point
-      ? validateCheckoutUrl(
-          remote.init_point
-        )
-      : null;
+        const checkoutUrl = remote.init_point
+            ? validateCheckoutUrl(
+                remote.init_point
+            )
+            : null;
 
-    await tx`
+        await tx`
       update billing.subscriptions
 
       set
@@ -270,41 +288,41 @@ export async function reconcileSubscription(
         )
     `;
 
-    if (authorized && payment) {
-      validateRecurringPayment(
-        local,
-        remote,
-        authorized,
-        payment
-      );
+        if (authorized && payment) {
+            validateRecurringPayment(
+                local,
+                remote,
+                authorized,
+                payment
+            );
 
-      const period =
-        calculateBillingPeriod(
-          authorized.debit_date,
-          local.frequency,
-          local.frequency_type
-        );
+            const period =
+                calculateBillingPeriod(
+                    authorized.debit_date,
+                    local.frequency,
+                    local.frequency_type
+                );
 
-      const accredited =
-        isAccreditedPayment(payment);
+            const accredited =
+                isAccreditedPayment(payment);
 
-      const revoked =
-        payment.transaction_amount_refunded > 0 ||
-        [
-          "refunded",
-          "charged_back",
-          "cancelled",
-        ].includes(payment.status);
+            const revoked =
+                payment.transaction_amount_refunded > 0 ||
+                [
+                    "refunded",
+                    "charged_back",
+                    "cancelled",
+                ].includes(payment.status);
 
-      const invoiceStatus = accredited
-        ? "PAID"
-        : revoked
-          ? "VOID"
-          : "OPEN";
+            const invoiceStatus = accredited
+                ? "PAID"
+                : revoked
+                    ? "VOID"
+                    : "OPEN";
 
-      const [invoice] = await tx<{
-        id: string;
-      }[]>`
+            const [invoice] = await tx<{
+                id: string;
+            }[]>`
         insert into platform.invoices (
           project_id,
           subscription_id,
@@ -379,10 +397,10 @@ export async function reconcileSubscription(
         returning id
       `;
 
-      if (!invoice) {
-        const [existing] = await tx<{
-          subscription_id: string;
-        }[]>`
+            if (!invoice) {
+                const [existing] = await tx<{
+                    subscription_id: string;
+                }[]>`
           select subscription_id
 
           from platform.invoices
@@ -393,26 +411,26 @@ export async function reconcileSubscription(
               ${authorized.id}
         `;
 
-        if (
-          !existing ||
-          existing.subscription_id !== local.id
-        ) {
-          throw new DomainError(
-            "INVOICE_OWNERSHIP_CONFLICT",
-            409
-          );
+                if (
+                    !existing ||
+                    existing.subscription_id !== local.id
+                ) {
+                    throw new DomainError(
+                        "INVOICE_OWNERSHIP_CONFLICT",
+                        409
+                    );
+                }
+            }
         }
-      }
-    }
 
-    await refreshSubscriptionStatus(
-      tx,
-      local.id
-    );
+        await refreshSubscriptionStatus(
+            tx,
+            local.id
+        );
 
-    return {
-      ignored: false,
-      subscription_id: local.id,
-    };
-  });
+        return {
+            ignored: false,
+            subscription_id: local.id,
+        };
+    });
 }

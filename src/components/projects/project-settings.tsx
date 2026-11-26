@@ -47,6 +47,7 @@ export function ProjectSettings({
   const t = useTranslations("Workspace");
   const projects = useTranslations("Projects");
   const common = useTranslations("Common");
+  const billing = useTranslations("Billing");
   const router = useRouter();
 
   const [name, setName] = useState(project.name);
@@ -61,7 +62,9 @@ export function ProjectSettings({
     "saved" | "saveError" | null
   >(null);
 
-  const [deleteError, setDeleteError] = useState(false);
+  const [deleteError, setDeleteError] = useState<
+    "deleteError" | "deleteBlocked" | null
+  >(null);
 
   const endpoint = `/api/projects/${project.id}`;
 
@@ -116,7 +119,7 @@ export function ProjectSettings({
     ) return;
 
     setDeleting(true);
-    setDeleteError(false);
+    setDeleteError(null);
 
     try {
       const response = await fetch(endpoint, {
@@ -124,14 +127,28 @@ export function ProjectSettings({
       });
 
       if (!response.ok) {
+        const result = await response.json().catch(
+          () => null
+        );
+
+        if (
+          result?.error?.code ===
+          "SUBSCRIPTION_MUST_BE_CANCELLED"
+        ) {
+          setDeleteError("deleteBlocked");
+          return;
+        }
+
         throw new Error("DELETE_FAILED");
       }
 
       setOpen(false);
       router.replace("/projects");
       router.refresh();
+
     } catch {
-      setDeleteError(true);
+      setDeleteError("deleteError");
+
     } finally {
       setDeleting(false);
     }
@@ -265,7 +282,7 @@ export function ProjectSettings({
 
               setOpen(value);
               setConfirmation("");
-              setDeleteError(false);
+              setDeleteError(null);
             }}
           >
             <AlertDialogTrigger asChild>
@@ -313,7 +330,9 @@ export function ProjectSettings({
               {deleteError && (
                 <Alert variant="destructive">
                   <AlertDescription>
-                    {t("deleteError")}
+                    {deleteError === "deleteBlocked"
+                      ? billing("deleteBlocked")
+                      : t("deleteError")}
                   </AlertDescription>
                 </Alert>
               )}

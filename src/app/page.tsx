@@ -46,6 +46,12 @@ export default async function HomePage() {
             <Button asChild>
               <Link href="/signup">{auth("signup")}</Link>
             </Button>
+
+            <Button variant="ghost" asChild>
+              <Link href="/docs">
+                {t("documentation")}
+              </Link>
+            </Button>
           </div>
         </nav>
       </header>

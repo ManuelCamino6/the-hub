@@ -1,84 +1,92 @@
 import type {
-  NextRequest,
+    NextRequest,
 } from "next/server";
 
 import {
-  timingSafeEqual,
-  createHash,
+    timingSafeEqual,
+    createHash,
 } from "node:crypto";
 
 import {
-  apiSuccess,
-  apiError,
-  apiDatabaseError,
+    apiSuccess,
+    apiError,
+    apiDatabaseError,
 } from "@/lib/api/response";
 
 import {
-  processPendingEvents,
+    processPendingEvents,
 } from "@/lib/billing/reconciliation/events";
 
-export const runtime = "nodejs";
+import {
+    reconcileNextSubscription,
+} from "@/lib/billing/reconciliation/maintenance";
 
 export const maxDuration = 60;
 
 function authorized(
-  request: NextRequest
+    request: NextRequest
 ) {
-  const secret =
-    process.env.CRON_SECRET;
+    const secret =
+        process.env.CRON_SECRET;
 
-  if (!secret) {
-    return false;
-  }
+    if (!secret) {
+        return false;
+    }
 
-  const expected = createHash(
-    "sha256"
-  )
-    .update(`Bearer ${secret}`)
-    .digest();
-
-  const received = createHash(
-    "sha256"
-  )
-    .update(
-      request.headers.get(
-        "authorization"
-      ) ?? ""
+    const expected = createHash(
+        "sha256"
     )
-    .digest();
+        .update(`Bearer ${secret}`)
+        .digest();
 
-  return timingSafeEqual(
-    expected,
-    received
-  );
+    const received = createHash(
+        "sha256"
+    )
+        .update(
+            request.headers.get(
+                "authorization"
+            ) ?? ""
+        )
+        .digest();
+
+    return timingSafeEqual(
+        expected,
+        received
+    );
 }
 
 export async function GET(
-  request: NextRequest
+    request: NextRequest
 ) {
-  if (!authorized(request)) {
-    return apiError(
-      "UNAUTHORIZED",
-      "Unauthorized.",
-      401
-    );
-  }
+    if (!authorized(request)) {
+        return apiError(
+            "UNAUTHORIZED",
+            "Unauthorized.",
+            401
+        );
+    }
 
-  try {
-    const result =
-      await processPendingEvents(1);
+    try {
+        const maintenance =
+            request.nextUrl.searchParams.get(
+                "task"
+            ) === "subscriptions";
 
-    const response =
-      apiSuccess(result);
+        const result = maintenance
+            ? await reconcileNextSubscription()
+            : await processPendingEvents(1);
 
-    response.headers.set(
-      "Cache-Control",
-      "no-store"
-    );
+        const response =
+            apiSuccess(result);
 
-    return response;
+        response.headers.set(
+            "Cache-Control",
+            "no-store"
+        );
 
-  } catch (error) {
-    return apiDatabaseError(error);
-  }
+        return response;
+
+    } catch (error) {
+        return apiDatabaseError(error);
+    }
 }
