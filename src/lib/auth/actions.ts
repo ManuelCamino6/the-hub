@@ -94,3 +94,107 @@ export async function loginWithGoogle() {
 
     redirect(data.url);
 }
+
+export async function requestPasswordReset(
+    _previousState: AuthState,
+    formData: FormData
+): Promise<AuthState> {
+    const t = await getTranslations("Auth");
+
+    const email = String(
+        formData.get("email") ?? ""
+    ).trim();
+
+    if (!email) {
+        return {
+            error: t("requiredFields"),
+        };
+    }
+
+    const supabase = await createClient();
+
+    const { error } =
+        await supabase.auth.resetPasswordForEmail(
+            email,
+            {
+                redirectTo:
+                    `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm`,
+            }
+        );
+
+    if (error) {
+        if (error.status === 429) {
+            return {
+                error: t("recoveryError"),
+            };
+        }
+    }
+
+    return {
+        success: t("recoveryEmailSent"),
+    };
+}
+
+export async function resetPassword(
+    _previousState: AuthState,
+    formData: FormData
+): Promise<AuthState> {
+    const t = await getTranslations("Auth");
+
+    const password = String(
+        formData.get("password") ?? ""
+    );
+
+    const confirmPassword = String(
+        formData.get("confirmPassword") ?? ""
+    );
+
+    if (password.length < 8) {
+        return {
+            error: t("passwordTooShort"),
+        };
+    }
+
+    if (password !== confirmPassword) {
+        return {
+            error: t("passwordMismatch"),
+        };
+    }
+
+    const supabase = await createClient();
+
+    const {
+        data: { user },
+        error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+        return {
+            error: t("invalidRecoverySession"),
+        };
+    }
+
+    const { error } = await supabase.auth.updateUser({
+        password,
+    });
+
+    if (error) {
+        return {
+            error: t("recoveryError"),
+        };
+    }
+
+    const { error: signOutError } =
+        await supabase.auth.signOut({
+            scope: "global",
+        });
+
+    if (signOutError) {
+        return {
+            success: t("passwordResetSuccess"),
+            error: t("sessionRevocationError"),
+        };
+    }
+
+    redirect("/login?reset=success");
+}

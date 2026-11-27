@@ -39,7 +39,23 @@
         "requiredFields": "Complete all fields.",
         "authenticationFailed": "We could not complete your authentication.",
         "tryAgain": "Please try again.",
-        "backToLogin": "Back to sign in"
+        "backToLogin": "Back to sign in",
+        "forgotPasswordTitle": "Recover password",
+        "forgotPasswordDescription": "Enter your email address to reset your password.",
+        "sendRecoveryEmail": "Send recovery link",
+        "sendingRecoveryEmail": "Sending link...",
+        "recoveryEmailSent": "If an account exists with that email address, you will receive a recovery link.",
+        "resetPasswordTitle": "Reset password",
+        "resetPasswordDescription": "Enter your new password.",
+        "newPassword": "New password",
+        "passwordMismatch": "Passwords do not match.",
+        "passwordTooShort": "Password must be at least 8 characters long.",
+        "resetPassword": "Reset password",
+        "resettingPassword": "Resetting password...",
+        "passwordResetSuccess": "Your password was updated successfully.",
+        "invalidRecoverySession": "The recovery link is invalid or has expired.",
+        "recoveryError": "We could not process your request. Please try again.",
+        "sessionRevocationError": "Your password was updated, but we could not sign out all sessions. Sign out and log in again."
     },
     "Dashboard": {
         "welcome": "Hello, {name}"

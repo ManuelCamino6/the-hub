@@ -39,7 +39,23 @@
         "requiredFields": "Completá todos los campos.",
         "authenticationFailed": "No pudimos completar la autenticación.",
         "tryAgain": "Volvé a intentarlo.",
-        "backToLogin": "Volver al inicio de sesión"
+        "backToLogin": "Volver al inicio de sesión",
+        "forgotPasswordTitle": "Recuperar contraseña",
+        "forgotPasswordDescription": "Ingresá tu correo electrónico para restablecer tu contraseña.",
+        "sendRecoveryEmail": "Enviar enlace de recuperación",
+        "sendingRecoveryEmail": "Enviando enlace...",
+        "recoveryEmailSent": "Si existe una cuenta asociada a ese correo, recibirás un enlace de recuperación.",
+        "resetPasswordTitle": "Restablecer contraseña",
+        "resetPasswordDescription": "Ingresá tu nueva contraseña.",
+        "newPassword": "Nueva contraseña",
+        "passwordMismatch": "Las contraseñas no coinciden.",
+        "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
+        "resetPassword": "Restablecer contraseña",
+        "resettingPassword": "Restableciendo contraseña...",
+        "passwordResetSuccess": "Tu contraseña se actualizó correctamente.",
+        "invalidRecoverySession": "El enlace de recuperación es inválido o expiró.",
+        "recoveryError": "No pudimos procesar la solicitud. Intentá nuevamente.",
+        "sessionRevocationError": "La contraseña se actualizó, pero no pudimos cerrar todas las sesiones. Cerrá sesión y volvé a ingresar."
     },
     "Dashboard": {
         "welcome": "Hola, {name}"

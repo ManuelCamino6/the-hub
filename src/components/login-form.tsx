@@ -17,12 +17,17 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Suspense } from "react";
+import {
+  PasswordResetNotice,
+} from "@/components/password-reset-notice";
 
 // CUSTOM IMPORTS
 import { useActionState } from "react";
 import { login } from "@/lib/auth/actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { GoogleLoginButton } from "@/components/google-login-button";
+import Link from "next/link";
 
 export function LoginForm({
   className,
@@ -41,6 +46,9 @@ export function LoginForm({
         </CardHeader>
         <CardContent>
           <form action={action}>
+            <Suspense fallback={null}>
+              <PasswordResetNotice />
+            </Suspense>
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -55,12 +63,12 @@ export function LoginForm({
               <Field>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                  <Link
+                    href="/forgot-password"
+                    className="ml-auto text-sm underline-offset-4 hover:underline"
                   >
-                    Forgot your password?
-                  </a>
+                    {t("forgotPassword")}
+                  </Link>
                 </div>
                 <Input id="password" name="password" type="password" required />
               </Field>
