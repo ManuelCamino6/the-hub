@@ -197,7 +197,8 @@
         "welcome": "Estás en {name}.",
         "businessDescription": "Administrá las integraciones de tu empresa.",
         "developmentDescription": "Administrá tus conectores reutilizables.",
-        "documentation": "Documentación"
+        "documentation": "Documentación",
+        "bi": "Business Intelligence"
     },
     "Members": {
         "title": "Integrantes",
@@ -776,5 +777,122 @@
         "endpointCount": "{count} operaciones",
         "contractLanguage": "Los contratos técnicos se presentan en inglés.",
         "openApiYamlDownload": "OpenAPI YAML"
+    },
+    "BI": {
+        "title": "Business Intelligence",
+        "description": "Conectá herramientas de análisis a los datos de tu proyecto.",
+        "connection": "Conexión PostgreSQL",
+        "connectionDescription": "Utilizá estos datos para configurar tu herramienta de Business Intelligence.",
+        "enable": "Habilitar acceso",
+        "disable": "Deshabilitar acceso",
+        "reactivate": "Reactivar acceso",
+        "rotate": "Rotar contraseña",
+        "enabled": "Habilitado",
+        "disabled": "Deshabilitado",
+        "initialTitle": "Habilitá el acceso BI",
+        "initialDescription": "Generá credenciales de solo lectura para consultar los datos de tu Business.",
+        "disabledTitle": "Acceso deshabilitado",
+        "disabledDescription": "Reactivá el acceso para generar una nueva contraseña.",
+        "unavailableTitle": "BI no disponible",
+        "unavailableDescription": "El acceso analítico no está disponible actualmente.",
+        "host": "Host",
+        "port": "Puerto",
+        "database": "Base de datos",
+        "schema": "Esquema",
+        "username": "Usuario",
+        "password": "Contraseña",
+        "ssl": "SSL",
+        "sslRequired": "Requerido",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "copyError": "No se pudo copiar el valor.",
+        "credentialsTitle": "Tus nuevas credenciales",
+        "credentialsDescription": "Guardá la contraseña en un lugar seguro. No volverá a mostrarse.",
+        "passwordNotice": "La contraseña solo se muestra al habilitar o rotar las credenciales.",
+        "credentialsSaved": "Ya guardé mis credenciales",
+        "rotateTitle": "¿Rotar contraseña?",
+        "rotateDescription": "Las herramientas conectadas deberán actualizar sus credenciales.",
+        "disableTitle": "¿Deshabilitar acceso BI?",
+        "disableDescription": "Las herramientas externas perderán el acceso a los datos del proyecto.",
+        "processing": "Procesando...",
+        "error": "No se pudo completar la operación.",
+        "alreadyEnabled": "El acceso BI ya está habilitado.",
+        "notEnabled": "El acceso BI no está habilitado.",
+        "sessionWarning": "Las credenciales se actualizaron, pero no se pudo confirmar el cierre de todas las sesiones anteriores.",
+        "readOnlyNotice": "Acceso de solo lectura a los datos de este Business.",
+        "documentation": "Documentación BI"
+    },
+    "BiDocs": {
+        "title": "Business Intelligence",
+        "description": "Conectá herramientas externas de análisis y visualización a los datos de The Hub.",
+        "gettingStarted": {
+            "title": "Primeros pasos",
+            "description": "Cada proyecto Business puede disponer de una identidad PostgreSQL independiente para consultar sus datos.",
+            "step1": "Ingresá a tu proyecto Business como administrador.",
+            "step2": "Abrí la sección Business Intelligence.",
+            "step3": "Habilitá el acceso y guardá las credenciales generadas.",
+            "step4": "Configurá tu herramienta utilizando una conexión PostgreSQL."
+        },
+        "connection": {
+            "title": "Parámetros de conexión",
+            "description": "Utilizá los valores que aparecen en la sección Business Intelligence de tu proyecto.",
+            "host": "Host",
+            "port": "Puerto",
+            "database": "Base de datos",
+            "schema": "Esquema",
+            "username": "Usuario",
+            "password": "Contraseña",
+            "ssl": "SSL",
+            "required": "Requerido",
+            "generated": "Generada por The Hub",
+            "configured": "Según la configuración del proyecto"
+        },
+        "powerBi": {
+            "title": "Microsoft Power BI",
+            "description": "Consultá los datos de tu Business mediante el conector PostgreSQL.",
+            "step1": "Abrí Power BI Desktop.",
+            "step2": "Seleccioná Obtener datos y buscá PostgreSQL.",
+            "step3": "Ingresá el servidor y la base de datos.",
+            "step4": "Seleccioná DirectQuery como modo de conectividad.",
+            "step5": "Autenticate con las credenciales generadas por The Hub.",
+            "step6": "Seleccioná las vistas del esquema analytics.",
+            "notice": "DirectQuery ejecuta consultas contra PostgreSQL. Evitá informes que generen consultas excesivas."
+        },
+        "metabase": {
+            "title": "Metabase",
+            "description": "Creá dashboards y consultas sobre los modelos disponibles.",
+            "step1": "Ingresá a la administración de Metabase.",
+            "step2": "Agregá una nueva base de datos PostgreSQL.",
+            "step3": "Completá los parámetros de conexión.",
+            "step4": "Habilitá SSL y limitá la sincronización al esquema analytics.",
+            "step5": "Guardá la conexión y verificá los modelos disponibles."
+        },
+        "queries": {
+            "title": "Ejemplos SQL",
+            "description": "Las vistas disponibles dependen de los modelos publicados en el protocolo.",
+            "select": "Consultar registros",
+            "aggregate": "Agrupar registros",
+            "join": "Relacionar modelos",
+            "modelNotice": "Los nombres de tablas y columnas de estos ejemplos son ilustrativos. Consultá el modelo de datos publicado."
+        },
+        "security": {
+            "title": "Seguridad",
+            "readOnly": "Las credenciales BI están destinadas exclusivamente a consultas de lectura.",
+            "isolation": "Las políticas Row Level Security restringen los registros al Business asociado a la identidad PostgreSQL.",
+            "password": "La contraseña solamente se muestra al habilitar o rotar las credenciales.",
+            "rotation": "Podés rotar la contraseña o deshabilitar el acceso desde la configuración BI.",
+            "restrictions": "Las tablas internas y las referencias de integración no forman parte del esquema analytics.",
+            "exports": "Los datos exportados o almacenados por herramientas externas no pueden revocarse desde The Hub."
+        },
+        "performance": {
+            "title": "Rendimiento",
+            "description": "Las consultas analíticas consumen recursos de la infraestructura PostgreSQL.",
+            "filters": "Aplicá filtros antes de consultar grandes volúmenes de datos.",
+            "columns": "Seleccioná únicamente las columnas necesarias.",
+            "aggregation": "Priorizá agregaciones en lugar de descargar registros completos.",
+            "refresh": "Evitá frecuencias de actualización innecesariamente altas.",
+            "concurrency": "Limitá la cantidad de consultas simultáneas.",
+            "availability": "La disponibilidad y capacidad analítica dependen de la infraestructura de la plataforma."
+        }
     }
 }

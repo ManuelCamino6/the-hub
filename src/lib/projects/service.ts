@@ -9,6 +9,10 @@ import {
     type Project,
 } from "./schemas";
 
+import {
+    terminateBiSessions,
+} from "@/lib/bi/sessions";
+
 export async function createProject(
     input: CreateProjectInput
 ) {
@@ -132,6 +136,15 @@ export async function deleteProject(id: string) {
     );
 
     if (error) throw error;
+
+    try {
+        await terminateBiSessions(id);
+    } catch {
+        console.warn(
+            "Project deleted; BI session cleanup failed.",
+            { projectId: id }
+        );
+    }
 
     return { id: data as string };
 }

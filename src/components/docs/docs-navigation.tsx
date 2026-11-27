@@ -8,6 +8,7 @@ import {
     BookOpen,
     Database,
     Code2,
+    ChartColumnBig,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,11 @@ export function DocsNavigation() {
             label: t("apiReference"),
             icon: Code2,
         },
+        {
+            href: "/docs/bi",
+            label: "Business Intelligence",
+            icon: ChartColumnBig,
+        }
     ];
 
     return (

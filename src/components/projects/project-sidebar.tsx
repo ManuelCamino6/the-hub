@@ -20,6 +20,7 @@ import {
     Activity,
     Newspaper,
     BookOpen,
+    Database,
 } from "lucide-react";
 
 import {
@@ -187,6 +188,26 @@ export function ProjectSidebar({
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
+
+                        {project.type === "BUSINESS" &&
+                            project.role === "ADMIN" && (
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={
+                                            pathname === `/p/${project.id}/bi`
+                                        }
+                                    >
+                                        <Link href={`/p/${project.id}/bi`}>
+                                            <Database />
+
+                                            <span>
+                                                {t("bi")}
+                                            </span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            )}
 
                         {project.type === "BUSINESS" && (
                             <SidebarMenuItem>
