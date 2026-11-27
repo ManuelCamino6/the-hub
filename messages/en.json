@@ -820,7 +820,8 @@
         "notEnabled": "BI access is not enabled.",
         "sessionWarning": "Credentials were updated, but termination of all previous sessions could not be confirmed.",
         "readOnlyNotice": "Read-only access to this Business data.",
-        "documentation": "BI documentation"
+        "documentation": "BI documentation",
+        "rotationTooSoon": "Wait 30 seconds before rotating the password again."
     },
     "BiDocs": {
         "title": "Business Intelligence",

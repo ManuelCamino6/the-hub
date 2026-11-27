@@ -820,7 +820,8 @@
         "notEnabled": "El acceso BI no está habilitado.",
         "sessionWarning": "Las credenciales se actualizaron, pero no se pudo confirmar el cierre de todas las sesiones anteriores.",
         "readOnlyNotice": "Acceso de solo lectura a los datos de este Business.",
-        "documentation": "Documentación BI"
+        "documentation": "Documentación BI",
+        "rotationTooSoon": "Esperá 30 segundos antes de volver a rotar la contraseña."
     },
     "BiDocs": {
         "title": "Business Intelligence",

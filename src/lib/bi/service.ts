@@ -271,6 +271,24 @@ export async function rotateBiAccess(
                 );
             }
 
+            const [rotation] = await tx<{
+                allowed: boolean;
+            }[]>`
+                select (
+                    rotated_at is null
+                    or rotated_at <= now() - interval '30 seconds'
+                ) as allowed
+                from platform.bi_access
+                where project_id = ${projectId}
+            `;
+
+            if (!rotation?.allowed) {
+                throw new DomainError(
+                    "BI_ROTATION_TOO_SOON",
+                    429
+                );
+            }
+
             await requireBiRole(
                 tx,
                 projectId
