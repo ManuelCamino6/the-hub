@@ -121,7 +121,8 @@
                 "integrations": "Integration management",
                 "synchronization": "Data synchronization",
                 "permissions": "Model permissions",
-                "activity": "Activity monitoring"
+                "activity": "Activity monitoring",
+                "analytics": "Business Intelligence subject to availability"
             },
             "createAccount": "Create account",
             "documentation": "Explore documentation",

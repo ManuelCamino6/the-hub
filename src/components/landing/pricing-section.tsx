@@ -13,30 +13,28 @@ import {
 
 import { Button } from "@/components/ui/button";
 
-import {
-    PricingCard,
-} from "./pricing-card";
+import { PricingCard } from "./pricing-card";
 
-import type {
-    PublicBusinessPlan,
+import {
+    getPublicBusinessPlan,
 } from "@/lib/billing/public-plan";
 
-type PricingSectionProps = {
-    plan?: PublicBusinessPlan | null;
-};
+import {
+    formatBillingAmount,
+} from "@/lib/billing/format";
 
-export async function PricingSection({
-    plan = null,
-}: PricingSectionProps) {
+export async function PricingSection() {
     const t = await getTranslations("Landing.pricing");
     const locale = await getLocale();
 
+    const plan = getPublicBusinessPlan();
+
     const businessPrice = plan
-        ? new Intl.NumberFormat(locale, {
-            style: "currency",
-            currency: plan.currency,
-            currencyDisplay: "code",
-        }).format(plan.amount_minor / 100)
+        ? formatBillingAmount(
+            plan.amount_minor,
+            plan.currency,
+            locale
+        )
         : t("business.price");
 
     const businessPeriod = plan
@@ -95,6 +93,7 @@ export async function PricingSection({
                         t("business.synchronization"),
                         t("business.permissions"),
                         t("business.activity"),
+                        t("business.analytics"),
                     ]}
                 />
             </div>

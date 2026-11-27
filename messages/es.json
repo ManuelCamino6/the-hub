@@ -121,7 +121,8 @@
                 "integrations": "Gestión de integraciones",
                 "synchronization": "Sincronización de datos",
                 "permissions": "Permisos por modelo",
-                "activity": "Seguimiento de actividad"
+                "activity": "Seguimiento de actividad",
+                "analytics": "Business Intelligence sujeto a disponibilidad"
             },
             "createAccount": "Crear cuenta",
             "documentation": "Consultar documentación",
