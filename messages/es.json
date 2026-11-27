@@ -726,6 +726,21 @@
             "statesNotice": "Solo OPEN admite nuevos cambios. Las propagaciones OK y EXPIRED son terminales. FAILED puede pasar a OK. Una instancia OK no implica que todas sus propagaciones estén confirmadas."
         },
         "loadError": "No se pudo cargar la documentación",
-        "loadErrorDescription": "La documentación no está disponible en este momento. Intentá nuevamente."
+        "loadErrorDescription": "La documentación no está disponible en este momento. Intentá nuevamente.",
+        "apiReference": "Referencia API",
+        "apiReferenceDescription": "Consultá los endpoints y contratos del protocolo de integración.",
+        "openApiDownload": "OpenAPI JSON",
+        "openApiDescription": "Importá la especificación en tu cliente HTTP o herramienta de desarrollo.",
+        "endpoint": "Endpoint",
+        "authenticationRequired": "Requiere token de conector",
+        "publicEndpoint": "Acceso público",
+        "requestBody": "Cuerpo de la solicitud",
+        "response": "Respuesta",
+        "parameters": "Parámetros",
+        "noRequestBody": "No requiere cuerpo de solicitud",
+        "apiContractNotice": "Los permisos, el estado operativo y las reglas del modelo se validan en el servidor.",
+        "endpointCount": "{count} operaciones",
+        "contractLanguage": "Los contratos técnicos se presentan en inglés.",
+        "openApiYamlDownload": "OpenAPI YAML"
     }
 }

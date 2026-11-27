@@ -189,9 +189,13 @@ export async function getConnectorInstance(
       order by d.key
     `;
 
-    const permissions = await tx<InstancePermission[]>`
+    const permissions = await tx<
+      (InstancePermission & {
+        table_name: string;
+      })[]
+    >`
       select
-        ep.table_id,
+        t.name as table_name,
         ep.can_list,
         ep.can_send_post,
         ep.can_receive_post,
@@ -242,11 +246,11 @@ export async function getConnectorInstance(
 
         const value =
           parameter.encrypted &&
-          parameter.value !== null
+            parameter.value !== null
             ? decrypt(
-                parameter.value,
-                `${instanceId}:${parameter.key}`
-              )
+              parameter.value,
+              `${instanceId}:${parameter.key}`
+            )
             : parameter.value;
 
         return {

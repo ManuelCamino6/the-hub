@@ -7,13 +7,13 @@ import { useTranslations } from "next-intl";
 import {
     BookOpen,
     Database,
+    Code2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
 export function DocsNavigation() {
     const pathname = usePathname();
-
     const t = useTranslations("Docs");
 
     const items = [
@@ -27,6 +27,11 @@ export function DocsNavigation() {
             label: t("model"),
             icon: Database,
         },
+        {
+            href: "/docs/api",
+            label: t("apiReference"),
+            icon: Code2,
+        },
     ];
 
     return (
@@ -35,30 +40,21 @@ export function DocsNavigation() {
             className="flex flex-wrap gap-2 md:flex-col"
         >
             {items.map((item) => {
-                const active =
-                    pathname === item.href;
+                const active = pathname === item.href;
+                const Icon = item.icon;
 
                 return (
                     <Button
                         key={item.href}
-                        variant={
-                            active
-                                ? "secondary"
-                                : "ghost"
-                        }
+                        variant={active ? "secondary" : "ghost"}
                         className="justify-start"
                         asChild
                     >
                         <Link
                             href={item.href}
-                            aria-current={
-                                active
-                                    ? "page"
-                                    : undefined
-                            }
+                            aria-current={active ? "page" : undefined}
                         >
-                            <item.icon />
-
+                            <Icon />
                             {item.label}
                         </Link>
                     </Button>

@@ -726,6 +726,21 @@
             "statesNotice": "Only OPEN accepts new changes. OK and EXPIRED propagations are terminal. FAILED can transition to OK. An OK instance does not imply that all its propagations are confirmed."
         },
         "loadError": "Could not load documentation",
-        "loadErrorDescription": "Documentation is currently unavailable. Please try again."
+        "loadErrorDescription": "Documentation is currently unavailable. Please try again.",
+        "apiReference": "API reference",
+        "apiReferenceDescription": "Explore integration protocol endpoints and contracts.",
+        "openApiDownload": "OpenAPI JSON",
+        "openApiDescription": "Import the specification into your HTTP client or development tool.",
+        "endpoint": "Endpoint",
+        "authenticationRequired": "Connector token required",
+        "publicEndpoint": "Public access",
+        "requestBody": "Request body",
+        "response": "Response",
+        "parameters": "Parameters",
+        "noRequestBody": "No request body required",
+        "apiContractNotice": "Permissions, operational status and model rules are validated on the server.",
+        "endpointCount": "{count} operations",
+        "contractLanguage": "Technical contracts are presented in English.",
+        "openApiYamlDownload": "OpenAPI YAML"
     }
 }

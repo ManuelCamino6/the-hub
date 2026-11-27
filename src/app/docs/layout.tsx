@@ -20,6 +20,8 @@ import {
   Button,
 } from "@/components/ui/button";
 
+export const instant = false;
+
 export async function generateMetadata() {
   const t = await getTranslations("Docs");
 
