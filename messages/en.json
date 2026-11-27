@@ -97,7 +97,41 @@
         "metadata": {
             "description": "A data synchronization platform powered by reusable connectors."
         },
-        "documentation": "Documentation"
+        "documentation": "Documentation",
+        "pricing": {
+            "title": "One platform, two ways to work",
+            "description": "Choose the project type that best fits your needs.",
+            "development": {
+                "title": "Development",
+                "description": "For integration developers.",
+                "price": "Free",
+                "period": "During the MVP",
+                "connectors": "Connector creation",
+                "distribution": "Public and private distribution",
+                "credentials": "Credential management",
+                "installations": "Installation monitoring",
+                "documentation": "API and documentation"
+            },
+            "business": {
+                "title": "Business",
+                "description": "For businesses connecting their systems.",
+                "price": "Subscription",
+                "period": "Per Business project",
+                "catalog": "Connector catalog",
+                "integrations": "Integration management",
+                "synchronization": "Data synchronization",
+                "permissions": "Model permissions",
+                "activity": "Activity monitoring"
+            },
+            "createAccount": "Create account",
+            "documentation": "Explore documentation",
+            "paymentNotice": "Payments managed through Mercado Pago.",
+            "subscriptionNotice": "Synchronization requires an active Business subscription.",
+            "fixedPriceNotice": "No additional charges per synchronization confirmation.",
+            "months": "{count, plural, one {per month} other {every # months}}",
+            "days": "{count, plural, one {per day} other {every # days}}"
+        },
+        "pricingLink": "Pricing"
     },
     "Projects": {
         "title": "My projects",

@@ -10,6 +10,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  PricingSection,
+} from "@/components/landing/pricing-section";
 
 const benefits = [
   "dataModel",
@@ -52,6 +55,13 @@ export default async function HomePage() {
                 {t("documentation")}
               </Link>
             </Button>
+
+            <Button variant="ghost" asChild>
+              <a href="#pricing">
+                {t("pricingLink")}
+              </a>
+            </Button>
+
           </div>
         </nav>
       </header>
@@ -131,6 +141,10 @@ export default async function HomePage() {
             {t("security.description")}
           </p>
         </section>
+
+        <Separator />
+
+        <PricingSection />
 
         <Separator />
 

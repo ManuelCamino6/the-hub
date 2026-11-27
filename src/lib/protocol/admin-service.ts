@@ -7,98 +7,103 @@ import { getDatabase } from "@/lib/db";
 import { DomainError } from "@/lib/api/domain-error";
 
 import {
-    createMaterializedTable,
-    addModelForeignKey,
-    addModelColumn,
-    alterModelColumn,
-    dropModelColumn,
-    renameMaterializedTable,
-    dropMaterializedTable,
+  createMaterializedTable,
+  addModelForeignKey,
+  addModelColumn,
+  alterModelColumn,
+  dropModelColumn,
+  renameMaterializedTable,
+  dropMaterializedTable,
 } from "./ddl";
 
 import { isDeepStrictEqual } from "node:util";
 
 import {
-    requireSuperadmin,
-    requireModelReader,
+  requireSuperadmin,
+  requireModelReader,
 } from "./authorization";
 
 import {
-    lockModelForWrite,
-    lockModelForRead,
+  lockModelForWrite,
+  lockModelForRead,
 } from "./locks";
 
 import {
-    validateColumnDefinition,
+  validateColumnDefinition,
 } from "./values";
 
 import {
-    decodeCursor,
-    paginate,
+  decodeCursor,
+  paginate,
 } from "@/lib/api/pagination";
 
 import type {
-    TableDefinition,
-    ListTablesInput,
-    ColumnDefinition,
-    ModelSummary,
+  TableDefinition,
+  ListTablesInput,
+  ColumnDefinition,
+  ModelSummary,
 } from "./schemas";
 
+import {
+  createAnalyticsView,
+  dropAnalyticsView,
+} from "@/lib/bi/ddl";
+
 async function getActiveVersion(
-    tx: TransactionSql
+  tx: TransactionSql
 ) {
-    const [version] = await tx<{
-        id: string;
-        number: number;
-    }[]>`
+  const [version] = await tx<{
+    id: string;
+    number: number;
+  }[]>`
     select id, number
     from protocol.versions
     where active
   `;
 
-    if (!version) {
-        throw new DomainError(
-            "MODEL_VERSION_NOT_FOUND",
-            404
-        );
-    }
+  if (!version) {
+    throw new DomainError(
+      "MODEL_VERSION_NOT_FOUND",
+      404
+    );
+  }
 
-    return version;
+  return version;
 }
 
 export async function createModelTable(
-    userId: string,
-    input: TableDefinition
+  userId: string,
+  input: TableDefinition
 ) {
-    const sql = getDatabase();
+  const sql = getDatabase();
 
-    return sql.begin(async (tx) => {
-        await requireSuperadmin(tx, userId);
-        await lockModelForWrite(tx);
+  return sql.begin(async (tx) => {
+    await requireSuperadmin(tx, userId);
+    await lockModelForWrite(tx);
 
-        const version = await getActiveVersion(tx);
+    const version = await getActiveVersion(tx);
 
-        const [existing] = await tx`
+    const [existing] = await tx`
       select id
       from protocol.tables
       where version_id = ${version.id}
         and name = ${input.name}
     `;
 
-        if (existing) {
-            throw new DomainError(
-                "MODEL_NAME_ALREADY_EXISTS",
-                409
-            );
-        }
+    if (existing) {
+      throw new DomainError(
+        "MODEL_NAME_ALREADY_EXISTS",
+        409
+      );
+    }
 
-        for (const column of input.columns) {
-            validateColumnDefinition(column);
-        }
+    for (const column of input.columns) {
+      validateColumnDefinition(column);
+    }
 
-        const [table] = await tx<{
-            id: string;
-        }[]>`
+    const [table] = await tx<{
+      id: string;
+    }[]>`
       insert into protocol.tables (
         version_id,
         name,
@@ -112,26 +117,26 @@ export async function createModelTable(
       returning id
     `;
 
-        for (const column of input.columns) {
-            await saveModelColumn(
-                tx,
-                table.id,
-                column
-            );
-        }
+    for (const column of input.columns) {
+      await saveModelColumn(
+        tx,
+        table.id,
+        column
+      );
+    }
 
-        await createMaterializedTable(
-            tx,
-            input.name,
-            input.columns
-        );
+    await createMaterializedTable(
+      tx,
+      input.name,
+      input.columns
+    );
 
-        for (const column of input.columns) {
-            if (!column.foreign_key) continue;
+    for (const column of input.columns) {
+      if (!column.foreign_key) continue;
 
-            const [target] = await tx<{
-                name: string;
-            }[]>`
+      const [target] = await tx<{
+        name: string;
+      }[]>`
         select name
         from protocol.tables
         where id = ${column.foreign_key}
@@ -139,41 +144,47 @@ export async function createModelTable(
           and deleted_at is null
       `;
 
-            if (!target) {
-                throw new DomainError(
-                    "INVALID_FOREIGN_KEY",
-                    422
-                );
-            }
+      if (!target) {
+        throw new DomainError(
+          "INVALID_FOREIGN_KEY",
+          422
+        );
+      }
 
-            await addModelForeignKey(
-                tx,
-                input.name,
-                column.name,
-                target.name
-            );
-        }
+      await addModelForeignKey(
+        tx,
+        input.name,
+        column.name,
+        target.name
+      );
+    }
 
-        return {
-            id: table.id,
-        };
-    });
+    await createAnalyticsView(
+      tx,
+      input.name,
+      input.columns
+    );
+
+    return {
+      id: table.id,
+    };
+  });
 }
 
 export async function listModelTables(
-    userId: string,
-    input: ListTablesInput
+  userId: string,
+  input: ListTablesInput
 ) {
-    const sql = getDatabase();
-    const cursor = decodeCursor(input.cursor);
+  const sql = getDatabase();
+  const cursor = decodeCursor(input.cursor);
 
-    return sql.begin(async (tx) => {
-        await lockModelForRead(tx);
-        await requireModelReader(tx, userId);
+  return sql.begin(async (tx) => {
+    await lockModelForRead(tx);
+    await requireModelReader(tx, userId);
 
-        const version = await getActiveVersion(tx);
+    const version = await getActiveVersion(tx);
 
-        const rows = await tx<ModelSummary[]>`
+    const rows = await tx<ModelSummary[]>`
       select
         id,
         name,
@@ -214,24 +225,24 @@ export async function listModelTables(
       limit ${input.limit + 1}
     `;
 
-        return paginate(rows, input.limit);
-    });
+    return paginate(rows, input.limit);
+  });
 }
 
 
 export async function getModelTable(
-    userId: string,
-    tableId: string
+  userId: string,
+  tableId: string
 ) {
-    const sql = getDatabase();
+  const sql = getDatabase();
 
-    return sql.begin(async (tx) => {
-        await lockModelForRead(tx);
-        await requireModelReader(tx, userId);
+  return sql.begin(async (tx) => {
+    await lockModelForRead(tx);
+    await requireModelReader(tx, userId);
 
-        const version = await getActiveVersion(tx);
+    const version = await getActiveVersion(tx);
 
-        const [table] = await tx<ModelSummary[]>`
+    const [table] = await tx<ModelSummary[]>`
       select
         id,
         name,
@@ -249,16 +260,16 @@ export async function getModelTable(
         and deleted_at is null
     `;
 
-        if (!table) {
-            throw new DomainError(
-                "MODEL_NOT_FOUND",
-                404
-            );
-        }
+    if (!table) {
+      throw new DomainError(
+        "MODEL_NOT_FOUND",
+        404
+      );
+    }
 
-        const columns = await tx<
-            (ColumnDefinition & { id: string })[]
-        >`
+    const columns = await tx<
+      (ColumnDefinition & { id: string })[]
+    >`
       select
         id,
         name,
@@ -277,20 +288,20 @@ export async function getModelTable(
       order by created_at, name
     `;
 
-        return {
-            ...table,
-            columns,
-        };
-    });
+    return {
+      ...table,
+      columns,
+    };
+  });
 }
 
 
 async function saveModelColumn(
-    tx: TransactionSql,
-    tableId: string,
-    column: ColumnDefinition
+  tx: TransactionSql,
+  tableId: string,
+  column: ColumnDefinition
 ) {
-    await tx`
+  await tx`
     insert into protocol.columns (
       table_id,
       name,
@@ -312,9 +323,9 @@ async function saveModelColumn(
       ${column.nullable},
       ${column.default_value},
       ${column.possible_values === null
-            ? null
-            : tx.array(column.possible_values)
-        }::varchar[]
+      ? null
+      : tx.array(column.possible_values)
+    }::varchar[]
     )
 
     on conflict (table_id, name)
@@ -503,6 +514,13 @@ export async function updateModelTable(
       ])
     );
 
+    await tx`set local lock_timeout = '5s'`;
+
+    await dropAnalyticsView(
+      tx,
+      table.name
+    );
+
     if (table.name !== input.name) {
       await renameMaterializedTable(
         tx,
@@ -592,6 +610,12 @@ export async function updateModelTable(
       );
     }
 
+    await createAnalyticsView(
+      tx,
+      input.name,
+      input.columns
+    );
+
     return {
       id: tableId,
     };
@@ -637,6 +661,13 @@ export async function deleteModelTable(
         409
       );
     }
+
+    await tx`set local lock_timeout = '5s'`;
+
+    await dropAnalyticsView(
+      tx,
+      table.name
+    );
 
     await dropMaterializedTable(
       tx,

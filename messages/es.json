@@ -97,7 +97,41 @@
         "metadata": {
             "description": "Plataforma de sincronización de datos entre sistemas mediante conectores reutilizables."
         },
-        "documentation": "Documentación"
+        "documentation": "Documentación",
+        "pricing": {
+            "title": "Una plataforma, dos formas de trabajar",
+            "description": "Elegí el tipo de proyecto que mejor se adapte a tus necesidades.",
+            "development": {
+                "title": "Development",
+                "description": "Para desarrolladores de integraciones.",
+                "price": "Sin cargo",
+                "period": "Durante el MVP",
+                "connectors": "Creación de conectores",
+                "distribution": "Distribución pública y privada",
+                "credentials": "Gestión de credenciales",
+                "installations": "Consulta de instalaciones",
+                "documentation": "API y documentación"
+            },
+            "business": {
+                "title": "Business",
+                "description": "Para empresas que conectan sus sistemas.",
+                "price": "Suscripción",
+                "period": "Por proyecto Business",
+                "catalog": "Catálogo de conectores",
+                "integrations": "Gestión de integraciones",
+                "synchronization": "Sincronización de datos",
+                "permissions": "Permisos por modelo",
+                "activity": "Seguimiento de actividad"
+            },
+            "createAccount": "Crear cuenta",
+            "documentation": "Consultar documentación",
+            "paymentNotice": "Pagos gestionados mediante Mercado Pago.",
+            "subscriptionNotice": "La sincronización requiere una suscripción Business activa.",
+            "fixedPriceNotice": "Sin cargos adicionales por cada confirmación de sincronización.",
+            "months": "{count, plural, one {por mes} other {cada # meses}}",
+            "days": "{count, plural, one {por día} other {cada # días}}"
+        },
+        "pricingLink": "Precios"
     },
     "Projects": {
         "title": "Mis proyectos",
